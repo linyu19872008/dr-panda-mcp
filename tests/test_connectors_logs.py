@@ -208,7 +208,7 @@ async def test_cls_search_log_maps_topic_and_rows(
 ) -> None:
     response = SimpleNamespace(
         Results=[
-            SimpleNamespace(Time=1767229200, Log="boom"),
+            SimpleNamespace(Time=1767229200, LogJson='{"msg":"boom"}', Log=None),
             SimpleNamespace(Time=None, Log="second"),
         ]
     )
@@ -242,8 +242,9 @@ async def test_cls_search_log_maps_topic_and_rows(
     assert request.To == 1767229200000
     assert request.Limit == 10
     assert request.Offset == 5
-    assert rows[0]["content"] == "boom"
+    assert rows[0]["content"] == '{"msg":"boom"}'
     assert rows[0]["time"] == "2026-01-01T01:00:00+00:00"
+    assert rows[1]["content"] == "second"
     assert rows[1]["time"] is None
 
 

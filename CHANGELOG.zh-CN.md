@@ -6,6 +6,12 @@
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-11-08
+
+### 修复
+
+- CLS `SearchLog` 结果正文改为优先读取 `LogJson`/`RawLog`；此前只读 `Log`/`Content`，导致 `cls_search` 返回空 `content`。
+
 ## [1.3.2] - 2026-11-08
 
 ### 修复

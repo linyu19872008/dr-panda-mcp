@@ -136,8 +136,13 @@ class _CLSClient:
                     "topic": topic,
                     "package_id": getattr(item, "PkgId", None),
                     "package_log_id": getattr(item, "PkgLogId", None),
-                    "content": getattr(item, "Log", "")
-                    or getattr(item, "Content", ""),
+                    "content": (
+                        getattr(item, "LogJson", None)
+                        or getattr(item, "RawLog", None)
+                        or getattr(item, "Log", None)
+                        or getattr(item, "Content", None)
+                        or ""
+                    ),
                 }
             )
         return rows
@@ -193,8 +198,13 @@ class _CLSClient:
                         getattr(item, "BTime", None)
                         or getattr(item, "Time", None)
                     ),
-                    "content": getattr(item, "Content", "")
-                    or getattr(item, "Log", ""),
+                    "content": (
+                        getattr(item, "Content", None)
+                        or getattr(item, "LogJson", None)
+                        or getattr(item, "RawLog", None)
+                        or getattr(item, "Log", None)
+                        or ""
+                    ),
                 }
             )
         return rows

@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-11-08
+
+### Fixed
+
+- CLS `SearchLog` result content now prefers `LogJson`/`RawLog`. Reading only `Log`/`Content` left `cls_search` rows with empty `content`.
+
 ## [1.3.2] - 2026-11-08
 
 ### Fixed

@@ -717,7 +717,7 @@ wheels = [
 
 [[package]]
 name = "dr-panda-mcp"
-version = "1.3.2"
+version = "1.3.3"
 source = { editable = "." }
 dependencies = [
     { name = "aiosqlite" },
