@@ -247,6 +247,37 @@ async def test_cls_search_log_maps_topic_and_rows(
     assert rows[1]["time"] is None
 
 
+async def test_cls_search_log_accepts_millisecond_result_time(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response = SimpleNamespace(
+        Results=[SimpleNamespace(Time=1767229200000, Log="ms-time")]
+    )
+    _install_fake_cls_sdk(monkeypatch, response)
+    target = make_target(
+        type_="cls",
+        options={
+            "region": "ap-guangzhou",
+            "allowed_topics": ["logset/app"],
+            "timeout_s": "15",
+        },
+        secret={"secret_id": "sid", "secret_key": "skey"},
+    )
+    client = _CLSClient(target)
+
+    rows = await client.search_log(
+        topic="logset/app",
+        query="*",
+        start=datetime(2026, 1, 1, tzinfo=UTC),
+        end=datetime(2026, 1, 1, 1, tzinfo=UTC),
+        limit=1,
+    )
+
+    assert rows[0]["content"] == "ms-time"
+    assert rows[0]["time"] == "2026-01-01T01:00:00+00:00"
+    assert rows[0]["btime"] == "2026-01-01 09:00:00.000"
+
+
 async def test_cls_describe_context_maps_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

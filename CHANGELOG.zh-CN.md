@@ -6,6 +6,12 @@
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-11-08
+
+### 修复
+
+- CLS 检索结果里的 `Time`/`BTime` 若为毫秒时间戳，先换算成秒再格式化；此前 `datetime.fromtimestamp` 会因年份越界抛 `ValueError`，表现为 `cls_search` 内部错误。
+
 ## [1.3.1] - 2026-11-08
 
 ### 修复

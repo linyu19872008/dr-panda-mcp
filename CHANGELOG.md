@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-11-08
+
+### Fixed
+
+- CLS search result `Time`/`BTime` values in milliseconds are converted to seconds before formatting. Previously `datetime.fromtimestamp` overflowed and `cls_search` failed with an internal `ValueError`.
+
 ## [1.3.1] - 2026-11-08
 
 ### Fixed

@@ -18,11 +18,22 @@ def topic_id(topic: str) -> str:
     return topic.rsplit("/", 1)[-1].strip()
 
 
+def _epoch_seconds(value: float) -> float:
+    """Normalize CLS epoch values that may be seconds or milliseconds."""
+    ts = float(value)
+    # 1e12 ms ≈ 2001-09-09; seconds will not reach 1e12 until year 33658.
+    if abs(ts) >= 1_000_000_000_000:
+        ts /= 1000.0
+    return ts
+
+
 def _time_text(value: Any) -> str | None:
     if value is None:
         return None
     if isinstance(value, (int, float)):
-        return datetime.fromtimestamp(value, tz=UTC).isoformat(timespec="seconds")
+        return datetime.fromtimestamp(_epoch_seconds(value), tz=UTC).isoformat(
+            timespec="seconds"
+        )
     return str(value)
 
 
@@ -31,9 +42,9 @@ def _btime_text(value: Any) -> str | None:
         return None
     if isinstance(value, (int, float)):
         # CLS DescribeLogContext 要求 UTC+8 的 "YYYY-mm-dd HH:MM:SS.FFF"。
-        return datetime.fromtimestamp(value, tz=timezone(timedelta(hours=8))).strftime(
-            "%Y-%m-%d %H:%M:%S.000"
-        )
+        return datetime.fromtimestamp(
+            _epoch_seconds(value), tz=timezone(timedelta(hours=8))
+        ).strftime("%Y-%m-%d %H:%M:%S.000")
     return str(value)
 
 

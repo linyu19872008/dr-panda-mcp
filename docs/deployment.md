@@ -20,7 +20,7 @@ The first installation must be completed on loopback (`127.0.0.1` / `localhost`)
 ./scripts/setup.sh install --method source --dev
 
 # PyPI installation into a dedicated directory
-sudo ./scripts/setup.sh install --method pypi --version 1.3.1 --dir /opt/dr-panda-mcp
+sudo ./scripts/setup.sh install --method pypi --version 1.3.2 --dir /opt/dr-panda-mcp
 
 # systemd service (Linux, root); dedicated user drpanda by default
 sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
