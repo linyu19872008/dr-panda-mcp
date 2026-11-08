@@ -55,7 +55,9 @@ SERVER_INSTRUCTIONS = (
     "time window and should prefer a trace id; full-table scans and unbounded fetches "
     "are rejected, and you must tell the user whenever results are truncated. Call "
     "systems_status first to see which environments exist; to see the targets inside "
-    "an environment, pass its environment key."
+    "an environment, pass its environment key. Each target row includes a scope with "
+    "authorized selectors; use those values for database, index, topic, vhost, project "
+    "and Redis key arguments."
 )
 
 

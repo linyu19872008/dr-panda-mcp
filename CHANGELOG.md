@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-08
+
+### Added
+
+- `systems_status` target rows now include a non-secret `scope` object with authorized selectors:
+  - MySQL/Mongo: `allowed_dbs`, `default_db`
+  - Elasticsearch: `allowed_indices`
+  - Redis: `key_prefix`
+  - RabbitMQ: `allowed_vhosts`
+  - Kafka/CLS: `allowed_topics`
+  - GitLab: `allowed_projects`
+- MCP instructions and the investigation prompt now require using scope values when choosing database/index/topic/vhost/project/key arguments.
+
 ## [1.2.5] - 2026-11-07
 
 ### Fixed

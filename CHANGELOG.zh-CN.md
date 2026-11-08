@@ -6,6 +6,19 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-08
+
+### 新增
+
+- `systems_status` 的目标行新增非敏感 `scope`，包含该类型授权的 selector：
+  - MySQL/Mongo：`allowed_dbs`、`default_db`
+  - Elasticsearch：`allowed_indices`
+  - Redis：`key_prefix`
+  - RabbitMQ：`allowed_vhosts`
+  - Kafka/CLS：`allowed_topics`
+  - GitLab：`allowed_projects`
+- MCP 服务器说明与排查提示词要求使用 `scope` 中的值选择库/索引/主题/vhost/项目/key。
+
 ## [1.2.5] - 2026-11-07
 
 ### 修复

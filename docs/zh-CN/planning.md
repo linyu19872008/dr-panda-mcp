@@ -1053,7 +1053,7 @@ Management API 只发 `GET`，读取队列深度、消费者数量、未确认�
 
 | 工具 | 参数 | 返回 | 闸门与范围 | 上限 |
 |---|---|---|---|---|
-| `systems_status` | `environment` 可空 | 不传时 `rows` 是环境：key、title、enabled、targets、enabled_targets。传入 key 时 `rows` 是该环境的目标：name、type、enabled、last_test_*。包络仍是 `target="*"`、`type="all"`，不新增顶层键 | 只读配置库，不外呼。未知 key 返回 `ENVIRONMENT_NOT_FOUND` | 全部环境，或该环境的全部目标 |
+| `systems_status` | `environment` 可空 | 不传时 `rows` 是环境：key、title、enabled、targets、enabled_targets。传入 key 时 `rows` 是该环境的目标：name、type、enabled、scope、last_test_*。`scope` 只含该类型授权的库/索引/主题/vhost/项目/Redis 前缀，不含连接串或密钥。包络仍是 `target="*"`、`type="all"`，不新增顶层键 | 只读配置库，不外呼。未知 key 返回 `ENVIRONMENT_NOT_FOUND` | 全部环境，或该环境的全部目标 |
 | `cls_search` | `target`、`query`、`from`、`to`（必填）、`topic`（唯一授权时可省略）、`limit`、`offset` | `rows`: time、topic、content 等 | `SearchLog`；主题须在允许列表；时间窗必填 | 窗口默认 1h、上限 24h；条数上限 |
 | `cls_context` | `target`、`topic`、`log_id`、`btime`、`pkg_log_id`、`before=10`、`after=10` | `rows`: 同一条日志前后若干条 | `DescribeLogContext`；主题须在允许列表 | before/after 各 ≤ 20 |
 | `gitlab_search_code` | `target`、`query`、`project`（可空）、`ref`、`limit=20`、`page=1` | `rows`: project、path、line、snippet | 只发 GET；项目在允许列表 | 条数上限 |

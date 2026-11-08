@@ -86,3 +86,53 @@ async def test_systems_status_is_audited(runtime: Runtime) -> None:
     assert rows[1].environment_key == "missing"
     assert rows[1].summary is not None
     assert "error=-" not in rows[1].summary
+
+
+async def test_systems_status_exposes_non_secret_target_scope(runtime: Runtime) -> None:
+    from dr_panda_mcp.store.protocol import SecretPatch, TargetDraft
+
+    targets = [
+        ("mysql-a", "mysql", {"allowed_dbs": ["chat", "logs"], "default_db": "chat"}),
+        ("mongo-a", "mongo", {"allowed_dbs": ["events"], "default_db": "events"}),
+        ("es-a", "elasticsearch", {"allowed_indices": ["test_orders"]}),
+        ("redis-a", "redis", {"key_prefix": "orders:"}),
+        ("rabbit-a", "rabbitmq", {"allowed_vhosts": ["cloud_21_test"]}),
+        ("kafka-a", "kafka", {"allowed_topics": ["orders.created"]}),
+        ("cls-a", "cls", {"allowed_topics": ["logset/topic-a"]}),
+        ("gitlab-a", "gitlab", {"allowed_projects": ["group/app"]}),
+    ]
+    for name, type_, options in targets:
+        await runtime.store.create(
+            TargetDraft(
+                name=name,
+                type=type_,
+                enabled=True,
+                options=options,
+                secret_patch=SecretPatch(set={}),
+                environment_key="default",
+            ),
+            "anonymous",
+        )
+
+    server = create_server(runtime.config, runtime)
+    async with Client(server) as client:
+        result = await client.call_tool("systems_status", {"environment": "default"})
+
+    payload = result.structured_content
+    assert payload is not None
+    rows = {row["name"]: row for row in payload["rows"]}
+    assert rows["mysql-a"]["scope"] == {
+        "allowed_dbs": ["chat", "logs"],
+        "default_db": "chat",
+    }
+    assert rows["mongo-a"]["scope"] == {
+        "allowed_dbs": ["events"],
+        "default_db": "events",
+    }
+    assert rows["es-a"]["scope"] == {"allowed_indices": ["test_orders"]}
+    assert rows["redis-a"]["scope"] == {"key_prefix": "orders:"}
+    assert rows["rabbit-a"]["scope"] == {"allowed_vhosts": ["cloud_21_test"]}
+    assert rows["kafka-a"]["scope"] == {"allowed_topics": ["orders.created"]}
+    assert rows["cls-a"]["scope"] == {"allowed_topics": ["logset/topic-a"]}
+    assert rows["gitlab-a"]["scope"] == {"allowed_projects": ["group/app"]}
+    assert "secret" not in str(payload).lower()

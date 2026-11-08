@@ -11,6 +11,7 @@ from fastmcp.exceptions import ToolError
 from dr_panda_mcp import errors
 from dr_panda_mcp.connectors import base
 from dr_panda_mcp.runtime import Runtime
+from dr_panda_mcp.store.protocol import Target
 from dr_panda_mcp.tools.base import EnvironmentParam, code_for, write_tool_audit
 
 
@@ -21,8 +22,9 @@ def register_systems_status(server: FastMCP, runtime: Runtime) -> None:
 
         When environment is omitted, only environments are returned (key, display
         title, target count). When it is provided, only that environment's targets
-        are returned. When there is more than one target of the same type, later
-        calls must name the target.
+        are returned. Each target row includes a non-secret scope object with
+        the authorized database/index/topic/vhost/project selectors. When there
+        is more than one target of the same type, later calls must name the target.
         """
         key = environment.strip()
         started = time.monotonic()
@@ -118,6 +120,7 @@ async def _targets(runtime: Runtime, key: str) -> dict[str, Any]:
             "name": target.name,
             "type": target.type,
             "enabled": target.enabled,
+            "scope": _target_scope(target),
             "last_test_at": _iso(target.last_test_at),
             "last_test_ok": target.last_test_ok,
             "last_test_error": target.last_test_error,
@@ -129,6 +132,12 @@ async def _targets(runtime: Runtime, key: str) -> dict[str, Any]:
         (
             "When there is more than one target of the same type, pass the "
             "corresponding target; there is no automatic selection."
+        ),
+        (
+            "Each target's scope lists its authorized selectors. Pass only values "
+            "from scope.allowed_dbs / allowed_indices / allowed_topics / "
+            "allowed_vhosts / allowed_projects; an empty list means no value is "
+            "authorized. A null key_prefix means no Redis prefix restriction."
         ),
     ]
     if not match.enabled:
@@ -147,6 +156,31 @@ async def _targets(runtime: Runtime, key: str) -> dict[str, Any]:
         },
         notes=notes,
     )
+
+
+_SCOPE_FIELDS: dict[str, tuple[str, ...]] = {
+    "mysql": ("allowed_dbs", "default_db"),
+    "mongo": ("allowed_dbs", "default_db"),
+    "elasticsearch": ("allowed_indices",),
+    "redis": ("key_prefix",),
+    "rabbitmq": ("allowed_vhosts",),
+    "kafka": ("allowed_topics",),
+    "cls": ("allowed_topics",),
+    "gitlab": ("allowed_projects",),
+}
+
+
+def _target_scope(target: Target) -> dict[str, Any]:
+    """Return the non-secret authorization scope for one target."""
+    scope: dict[str, Any] = {}
+    for field in _SCOPE_FIELDS.get(target.type, ()):
+        value = target.options.get(field)
+        if field in {"default_db", "key_prefix"}:
+            text = str(value).strip() if value is not None else ""
+            scope[field] = text or None
+        else:
+            scope[field] = [str(item) for item in (value or [])]
+    return scope
 
 
 def _envelope(
