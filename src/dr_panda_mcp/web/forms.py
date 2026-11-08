@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+import re
 import ssl
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
 from dr_panda_mcp.store.protocol import SecretPatch, Target, TargetDraft
+
+# Tencent CLS LogsetId / TopicId are UUIDs; friendly names must not be registered.
+_CLS_TOPIC_RE = re.compile(
+    r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    r"/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+)
 
 NAME_PATTERN_HINT = "只允许小写字母、数字与连字符，以字母或数字开头结尾，最长 64"
 
@@ -283,7 +290,13 @@ TYPE_SPECS: dict[str, TypeSpec] = {
         "CLS",
         (
             Field("region", "地域", "text", required=True, help="例如 ap-shanghai；腾讯云地域通常以 ap- 开头。"),
-            Field("allowed_topics", "允许的日志主题（一行一个，日志集/topic）", "list", required=True),
+            Field(
+                "allowed_topics",
+                "允许的日志主题（一行一个）",
+                "list",
+                required=True,
+                help="格式：日志集ID/日志主题ID（均为控制台 UUID，不是主题名称）。",
+            ),
             Field("default_window_minutes", "默认时间窗（分钟）", "int", default=60),
             Field("max_window_minutes", "最大时间窗（分钟）", "int", default=1440),
         ),
@@ -291,7 +304,7 @@ TYPE_SPECS: dict[str, TypeSpec] = {
             SecretField("secret_id", "SecretId", required=True),
             SecretField("secret_key", "SecretKey", required=True),
         ),
-        "搜索必须带时间范围。",
+        "搜索必须带时间范围；探活会对每个授权主题做一次轻量 SearchLog。",
     ),
 }
 
@@ -513,6 +526,13 @@ def _cross_validate(
                 errors["default_window_minutes"] = "默认时间窗不能大于最大时间窗"
             if not 1 <= max_window <= 1440:
                 errors["max_window_minutes"] = "最大时间窗必须在 1–1440 分钟"
+        topics = options.get("allowed_topics") or []
+        if isinstance(topics, list) and any(
+            not _CLS_TOPIC_RE.match(str(item).strip()) for item in topics
+        ):
+            errors["allowed_topics"] = (
+                "每行须为「日志集ID/日志主题ID」UUID（控制台复制），不能使用主题名称。"
+            )
 
 
 def _infer_mongo_auth_mode(target: Target) -> str:

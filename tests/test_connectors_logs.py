@@ -226,7 +226,7 @@ async def test_cls_search_log_maps_topic_and_rows(
     start = datetime(2026, 1, 1, tzinfo=UTC)
     end = datetime(2026, 1, 1, 1, tzinfo=UTC)
 
-    rows = await client.search_log(
+    rows, stats = await client.search_log(
         topic="logset/app",
         query="level:ERROR",
         start=start,
@@ -242,6 +242,8 @@ async def test_cls_search_log_maps_topic_and_rows(
     assert request.To == 1767229200000
     assert request.Limit == 10
     assert request.Offset == 5
+    assert request.Sort == "desc"
+    assert stats["mode"] == "search"
     assert rows[0]["content"] == '{"msg":"boom"}'
     assert rows[0]["time"] == "2026-01-01T01:00:00+00:00"
     assert rows[1]["content"] == "second"
@@ -266,7 +268,7 @@ async def test_cls_search_log_accepts_millisecond_result_time(
     )
     client = _CLSClient(target)
 
-    rows = await client.search_log(
+    rows, stats = await client.search_log(
         topic="logset/app",
         query="*",
         start=datetime(2026, 1, 1, tzinfo=UTC),
@@ -274,6 +276,7 @@ async def test_cls_search_log_accepts_millisecond_result_time(
         limit=1,
     )
 
+    assert stats["mode"] == "search"
     assert rows[0]["content"] == "ms-time"
     assert rows[0]["time"] == "2026-01-01T01:00:00+00:00"
     assert rows[0]["btime"] == "2026-01-01 09:00:00.000"
@@ -321,3 +324,81 @@ async def test_cls_describe_context_maps_rows(
     assert rows[0]["package_log_id"] == 123
     assert rows[0]["btime"] == "2026-01-01 09:00:00.000"
     assert rows[0]["content"] == "context line"
+
+
+async def test_cls_search_log_maps_analysis_results(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response = SimpleNamespace(
+        Results=[],
+        AnalysisResults=[
+            SimpleNamespace(
+                Data=[
+                    SimpleNamespace(Key="c", Value="42"),
+                    SimpleNamespace(Key="level", Value="ERROR"),
+                ]
+            )
+        ],
+        Context="ctx-1",
+        ListOver=True,
+    )
+    state = _install_fake_cls_sdk(monkeypatch, response)
+    target = make_target(
+        type_="cls",
+        options={
+            "region": "ap-guangzhou",
+            "allowed_topics": ["logset/app"],
+            "timeout_s": "15",
+        },
+        secret={"secret_id": "sid", "secret_key": "skey"},
+    )
+    client = _CLSClient(target)
+
+    rows, stats = await client.search_log(
+        topic="logset/app",
+        query="* | SELECT count(*) as c",
+        start=datetime(2026, 1, 1, tzinfo=UTC),
+        end=datetime(2026, 1, 1, 1, tzinfo=UTC),
+        limit=10,
+        sort="asc",
+        context="prev-ctx",
+    )
+
+    request = state["search_request"]
+    assert request.Sort == "asc"
+    assert request.Context == "prev-ctx"
+    assert not hasattr(request, "Offset") or getattr(request, "Offset", None) is None
+    assert request.UseNewAnalysis is True
+    assert stats["mode"] == "analysis"
+    assert stats["next_context"] == "ctx-1"
+    assert rows == [{"topic": "logset/app", "c": "42", "level": "ERROR"}]
+
+
+async def test_cls_ping_probes_allowed_topics(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response = SimpleNamespace(Results=[])
+    state = _install_fake_cls_sdk(monkeypatch, response)
+    target = make_target(
+        type_="cls",
+        options={
+            "region": "ap-guangzhou",
+            "allowed_topics": ["logset/app", "logset/other"],
+            "timeout_s": "15",
+        },
+        secret={"secret_id": "sid", "secret_key": "skey"},
+    )
+    client = _CLSClient(target)
+    search_topics: list[str] = []
+    original = client.search_log
+
+    async def tracking_search(**kwargs):
+        search_topics.append(kwargs["topic"])
+        return await original(**kwargs)
+
+    monkeypatch.setattr(client, "search_log", tracking_search)
+
+    await client.ping()
+
+    assert search_topics == ["logset/app", "logset/other"]
+    assert state["region"] == "ap-guangzhou"

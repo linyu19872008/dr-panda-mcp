@@ -6,6 +6,23 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-08
+
+### 新增
+
+- CLS 表单校验要求 `日志集ID/日志主题ID`（UUID）；友好主题名在保存时拒绝。
+- CLS 探活在 `DescribeLogsets` 之后，对每个授权主题做一次 1 分钟窗的 `SearchLog`。
+- `cls_search` 支持分析查询（`| SELECT`），返回 `stats.mode` / `stats.next_context`，并新增可选参数 `sort`、`context`、`merge_packages`、`compact`。
+- 宽时间窗（desc 且 >2 小时）的 `cls_search` 会在 notes 提示 newest-first，引导 Agent 收窄到故障时刻。
+- 工具 annotations 补充 `destructiveHint=false`、`idempotentHint=true`、`openWorldHint=true`。
+- 真实上游 E2E 清单：`docs/zh-CN/verify/upstream-e2e-checklist.md`。
+
+### 变更
+
+- MCP `SERVER_INSTRUCTIONS` 与 CLS 工具文档写明 TopicId UUID、窄窗、用 `context` 翻页、以及 analysis 模式。
+- `systems_status` notes 提醒 CLS `allowed_topics` 为 UUID 对。
+- `INTERNAL` 工具错误（含 `systems_status`）向 Agent 带回脱敏后的短异常信息。
+
 ## [1.3.3] - 2026-11-08
 
 ### 修复

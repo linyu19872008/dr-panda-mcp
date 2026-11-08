@@ -87,7 +87,10 @@ PAYLOADS: dict[str, dict[str, str]] = {
         "name": "cls-target",
         "enabled": "on",
         "region": "ap-guangzhou",
-        "allowed_topics": "logset/topic",
+        "allowed_topics": (
+            "11111111-1111-1111-1111-111111111111/"
+            "22222222-2222-2222-2222-222222222222"
+        ),
         "secret_secret_id": "id",
         "secret_secret_key": "key",
         **COMMON,
@@ -144,6 +147,20 @@ async def test_create_each_type(runtime: Runtime, type_: str, label: str) -> Non
     assert target is not None and target.type == type_
     assert PAYLOADS[type_]["name"] in index.text
     assert label in index.text
+
+
+async def test_cls_rejects_friendly_topic_names(runtime: Runtime) -> None:
+    payload = {
+        **PAYLOADS["cls"],
+        "name": "cls-bad-topic",
+        "allowed_topics": "gateway-prod",
+    }
+    async with _client(runtime) as client:
+        response = await client.post("/targets", data=payload)
+
+    assert response.status_code == 400
+    assert "UUID" in response.text or "日志集ID" in response.text
+    assert await runtime.store.get("cls-bad-topic") is None
 
 
 async def test_new_form_and_unknown_type(runtime: Runtime) -> None:

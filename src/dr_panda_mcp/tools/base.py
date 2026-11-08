@@ -26,7 +26,12 @@ from dr_panda_mcp.store.protocol import AuditEntry, Target
 
 logger = logging.getLogger(__name__)
 
-TOOL_ANNOTATIONS = {"readOnlyHint": True}
+TOOL_ANNOTATIONS = {
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": True,
+}
 
 EnvironmentParam = Annotated[
     str,
@@ -348,9 +353,12 @@ async def run_tool(
         raise ToolError(f"{error_code}: {error_message}") from exc
     except Exception as exc:
         error_code = errors.INTERNAL
-        error_message = str(exc)
+        secrets = target.secret.values() if target else []
+        detail = _clip_text(redact(str(exc), secrets), 200)
+        error_message = detail or str(exc)
+        suffix = f": {detail}" if detail else ""
         raise ToolError(
-            f"{errors.INTERNAL}: tool execution failed ({type(exc).__name__})"
+            f"{errors.INTERNAL}: tool execution failed ({type(exc).__name__}){suffix}"
         ) from exc
     finally:
         environment_key = (
@@ -381,6 +389,7 @@ def finish(
     stats: dict[str, Any] | None = None,
     time_range: dict[str, str] | None = None,
     truncation: connectors_base.Truncation | None = None,
+    notes: list[str] | None = None,
 ) -> dict[str, Any]:
     """按目标上限截断并生成 11 键包络。
 
@@ -390,17 +399,19 @@ def finish(
         rows, connectors_base.max_rows(target), connectors_base.max_bytes(target)
     )
     effective = truncation or auto_truncation
-    notes = (
+    built = (
         ["Results were truncated; narrow the query range, time window, or row count."]
         if effective
         else []
     )
     if target.environment_key:
         label = target.environment_title or target.environment_key
-        notes.insert(0, f"Environment {target.environment_key} ({label}).")
+        built.insert(0, f"Environment {target.environment_key} ({label}).")
+    if notes:
+        built.extend(notes)
     stats, stats_truncated = _cap_stats(stats, connectors_base.max_bytes(target))
     if stats_truncated:
-        notes.append("Statistics were truncated due to the target byte limit.")
+        built.append("Statistics were truncated due to the target byte limit.")
     return connectors_base.build_envelope(
         target,
         summary=summary[:200],
@@ -409,7 +420,7 @@ def finish(
         stats=stats,
         time_range=time_range,
         truncation=effective,
-        notes=notes,
+        notes=built,
     )
 
 

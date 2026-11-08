@@ -57,7 +57,12 @@ SERVER_INSTRUCTIONS = (
     "systems_status first to see which environments exist; to see the targets inside "
     "an environment, pass its environment key. Each target row includes a scope with "
     "authorized selectors; use those values for database, index, topic, vhost, project "
-    "and Redis key arguments."
+    "and Redis key arguments. "
+    "CLS topics in scope.allowed_topics are logsetId/topicId UUIDs (not friendly "
+    "names). cls_search defaults to newest-first (sort=desc); for a specific incident "
+    "time, shrink from/to around that moment (prefer windows of 30–60 minutes) instead "
+    "of a multi-hour span. Pass context from stats.next_context to page further. "
+    "Queries with `| SELECT` return analysis rows (stats.mode=analysis)."
 )
 
 

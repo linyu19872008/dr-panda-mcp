@@ -135,4 +135,5 @@ async def test_systems_status_exposes_non_secret_target_scope(runtime: Runtime) 
     assert rows["kafka-a"]["scope"] == {"allowed_topics": ["orders.created"]}
     assert rows["cls-a"]["scope"] == {"allowed_topics": ["logset/topic-a"]}
     assert rows["gitlab-a"]["scope"] == {"allowed_projects": ["group/app"]}
+    assert any("logsetId/topicId" in note for note in payload["notes"])
     assert "secret" not in str(payload).lower()

@@ -40,7 +40,12 @@ class FakeCLSConnector:
         self.search_calls.append(kwargs)
         if self.error:
             raise self.error
-        return [dict(row) for row in self.rows]
+        return [dict(row) for row in self.rows], {
+            "mode": "search",
+            "next_context": "ctx-next",
+            "list_over": False,
+            "sort": kwargs.get("sort") or "desc",
+        }
 
     async def describe_context(self, client, target, **kwargs):
         self.context_calls.append(kwargs)
@@ -485,6 +490,89 @@ async def test_tool_audit_and_masking(
     assert "cls_search" in summary and "logs-cls" in summary and "returned=" in summary
     assert "13800138000" not in summary
     assert "secret-key-value" not in summary
+
+
+async def test_cls_search_wide_window_hint_and_options(
+    runtime: Runtime, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await _create_cls_target(runtime, max_rows=10)
+    fake = FakeCLSConnector()
+    fake.rows = [
+        {
+            "time": "2026-01-01T01:00:00+00:00",
+            "topic": "logset/app",
+            "package_id": "pkg-1",
+            "package_log_id": 1,
+            "content": "line-a",
+        },
+        {
+            "time": "2026-01-01T01:00:01+00:00",
+            "topic": "logset/app",
+            "package_id": "pkg-1",
+            "package_log_id": 2,
+            "content": "line-b",
+        },
+        {
+            "time": "2026-01-01T01:00:02+00:00",
+            "topic": "logset/app",
+            "package_id": "pkg-2",
+            "package_log_id": 1,
+            "content": "other",
+        },
+    ]
+    _patch_connectors(monkeypatch, fake, FakeGitLabConnector())
+
+    payload = await _call(
+        runtime,
+        "cls_search",
+        {
+            "target": "logs-cls",
+            "query": "level:ERROR",
+            "topic": "logset/app",
+            "from": "2026-01-01T00:00:00Z",
+            "to": "2026-01-01T04:00:00Z",
+            "sort": "desc",
+            "merge_packages": True,
+            "compact": True,
+        },
+    )
+
+    assert payload["stats"]["mode"] == "search"
+    assert payload["stats"]["next_context"] == "ctx-next"
+    assert payload["stats"]["sort"] == "desc"
+    assert any("newest-first" in note for note in payload["notes"])
+    assert payload["returned"] == 2
+    assert payload["rows"][0]["content"] == "line-a\nline-b"
+    assert fake.search_calls[0]["sort"] == "desc"
+
+
+async def test_cls_search_internal_error_includes_message(
+    runtime: Runtime, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await _create_cls_target(runtime)
+    fake = FakeCLSConnector()
+    fake.error = ValueError("fromtimestamp year out of range secret-key-value")
+    _patch_connectors(monkeypatch, fake, FakeGitLabConnector())
+    server = create_server(runtime.config, runtime)
+
+    async with Client(server) as client:
+        with pytest.raises(ToolError) as excinfo:
+            await client.call_tool(
+                "cls_search",
+                {
+                    "target": "logs-cls",
+                    "query": "x",
+                    "topic": "logset/app",
+                    "from": "2026-01-01T00:00:00Z",
+                    "to": "2026-01-01T01:00:00Z",
+                },
+            )
+
+    message = str(excinfo.value)
+    assert errors.INTERNAL in message
+    assert "ValueError" in message
+    assert "fromtimestamp" in message
+    assert "secret-key-value" not in message
 
 
 async def test_prompt_contains_order(runtime: Runtime) -> None:

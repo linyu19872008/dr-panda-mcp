@@ -948,7 +948,7 @@ Management API 只发 `GET`，读取队列深度、消费者数量、未确认�
 | 地域 | `options.region` | 是 | — | 例如 `ap-guangzhou` |
 | SecretId | `secret.secret_id` | 是 | — | |
 | SecretKey | `secret.secret_key` | 是 | — | |
-| 允许的日志主题 | `options.allowed_topics` | 是 | — | `日志集/topic` 列表，空表示拒绝 |
+| 允许的日志主题 | `options.allowed_topics` | 是 | — | `日志集ID/日志主题ID`（UUID）列表，空表示拒绝；不可用友好名称 |
 | 默认时间窗 | `options.default_window_minutes` | 否 | 60 | 1–1440 |
 | 最大时间窗 | `options.max_window_minutes` | 否 | 1440 | 不超过 1440 |
 
@@ -1062,7 +1062,7 @@ Management API 只发 `GET`，读取队列深度、消费者数量、未确认�
 
 第一批上线后补充两条实现约定：
 
-- CLS 的 `topic` 使用网页登记值；值里带 `/` 时（如 `日志集/topic`），调用 CLS API 时取最后一段作为 `TopicId`。`cls_search` 必须指定 `topic`；目标只授权了一个主题时可省略，自动使用该主题。
+- CLS 的 `topic` 使用网页登记值；须为 `日志集ID/日志主题ID`（UUID）。调用 CLS API 时取最后一段作为 `TopicId`。`cls_search` 必须指定 `topic`；目标只授权了一个主题时可省略，自动使用该主题。
 - `gitlab_search_code` 不填 `project` 时，只在目标授权的项目列表内逐个搜索，不发起全局搜索；跨项目结果总量仍受 `limit` 与目标上限约束。
 
 ### 8.5 第二批：数据面

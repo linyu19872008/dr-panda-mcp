@@ -12,11 +12,16 @@ from dr_panda_mcp import errors
 from dr_panda_mcp.connectors import base
 from dr_panda_mcp.runtime import Runtime
 from dr_panda_mcp.store.protocol import Target
-from dr_panda_mcp.tools.base import EnvironmentParam, code_for, write_tool_audit
+from dr_panda_mcp.tools.base import (
+    TOOL_ANNOTATIONS,
+    EnvironmentParam,
+    code_for,
+    write_tool_audit,
+)
 
 
 def register_systems_status(server: FastMCP, runtime: Runtime) -> None:
-    @server.tool(annotations={"readOnlyHint": True})
+    @server.tool(annotations=TOOL_ANNOTATIONS)
     async def systems_status(environment: EnvironmentParam = "") -> dict[str, Any]:
         """List environments, or list one environment's targets with recent connectivity.
 
@@ -25,6 +30,7 @@ def register_systems_status(server: FastMCP, runtime: Runtime) -> None:
         are returned. Each target row includes a non-secret scope object with
         the authorized database/index/topic/vhost/project selectors. When there
         is more than one target of the same type, later calls must name the target.
+        CLS scope.allowed_topics entries are logsetId/topicId UUIDs, not topic names.
         """
         key = environment.strip()
         started = time.monotonic()
@@ -47,8 +53,14 @@ def register_systems_status(server: FastMCP, runtime: Runtime) -> None:
             raise ToolError(f"{error_code}: {exc}") from exc
         except Exception as exc:
             error_code = errors.INTERNAL
-            error_message = str(exc)
-            raise
+            detail = str(exc).strip()
+            if len(detail) > 200:
+                detail = detail[:199] + "…"
+            error_message = detail or str(exc)
+            suffix = f": {detail}" if detail else ""
+            raise ToolError(
+                f"{errors.INTERNAL}: tool execution failed ({type(exc).__name__}){suffix}"
+            ) from exc
         finally:
             await write_tool_audit(
                 runtime,
@@ -140,6 +152,11 @@ async def _targets(runtime: Runtime, key: str) -> dict[str, Any]:
             "authorized. A null key_prefix means no Redis prefix restriction."
         ),
     ]
+    if any(target.type == "cls" for target in targets):
+        notes.append(
+            "CLS allowed_topics entries are logsetId/topicId UUIDs from the "
+            "Tencent Cloud console, not friendly topic names."
+        )
     if not match.enabled:
         notes.append(
             f"Environment {match.key} ({match.title}) is disabled; investigation "

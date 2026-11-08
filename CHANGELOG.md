@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-08
+
+### Added
+
+- CLS form validation requires `logsetId/topicId` UUIDs; friendly topic names are rejected at save time.
+- CLS probe now runs a one-minute `SearchLog` against each authorized topic after `DescribeLogsets`.
+- `cls_search` supports analysis queries (`| SELECT`), returns `stats.mode` / `stats.next_context`, and accepts optional `sort`, `context`, `merge_packages`, and `compact`.
+- Wide-window `cls_search` (desc, >2h) adds a newest-first note so agents shrink the window around an incident time.
+- Tool annotations now include `destructiveHint=false`, `idempotentHint=true`, and `openWorldHint=true`.
+- Upstream E2E checklist: `docs/zh-CN/verify/upstream-e2e-checklist.md`.
+
+### Changed
+
+- MCP `SERVER_INSTRUCTIONS` and CLS tool docs spell out TopicId UUIDs, narrow windows, paging via `context`, and analysis mode.
+- `systems_status` notes remind that CLS `allowed_topics` are UUID pairs.
+- `INTERNAL` tool errors (including `systems_status`) now include a short redacted exception message for agents.
+
 ## [1.3.3] - 2026-11-08
 
 ### Fixed
