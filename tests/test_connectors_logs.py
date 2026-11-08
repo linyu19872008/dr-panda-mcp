@@ -123,9 +123,12 @@ def _install_fake_cls_sdk(monkeypatch: pytest.MonkeyPatch, response: Any) -> dic
         pass
 
     class FakeClsClient:
-        def __init__(self, credential, region, timeout) -> None:
+        def __init__(self, credential, region, profile=None) -> None:
             state["region"] = region
-            state["timeout"] = timeout
+            state["profile"] = profile
+            state["timeout"] = (
+                profile.httpProfile.reqTimeout if profile is not None else None
+            )
 
         def SearchLog(self, request):
             state["search_request"] = request
@@ -142,8 +145,28 @@ def _install_fake_cls_sdk(monkeypatch: pytest.MonkeyPatch, response: Any) -> dic
     credential_module.Credential = lambda sid, skey: SimpleNamespace(
         sid=sid, skey=skey
     )
+    client_profile_module = types.ModuleType(
+        "tencentcloud.common.profile.client_profile"
+    )
+
+    class ClientProfile:
+        def __init__(self, httpProfile=None) -> None:
+            self.httpProfile = httpProfile
+
+    client_profile_module.ClientProfile = ClientProfile
+    http_profile_module = types.ModuleType("tencentcloud.common.profile.http_profile")
+
+    class HttpProfile:
+        def __init__(self, reqTimeout=60) -> None:
+            self.reqTimeout = reqTimeout
+
+    http_profile_module.HttpProfile = HttpProfile
+    profile_module = types.ModuleType("tencentcloud.common.profile")
+    profile_module.client_profile = client_profile_module
+    profile_module.http_profile = http_profile_module
     common_module = types.ModuleType("tencentcloud.common")
     common_module.credential = credential_module
+    common_module.profile = profile_module
 
     models_module = types.ModuleType("tencentcloud.cls.v20201016.models")
     models_module.SearchLogRequest = SearchLogRequest
@@ -168,6 +191,9 @@ def _install_fake_cls_sdk(monkeypatch: pytest.MonkeyPatch, response: Any) -> dic
         "tencentcloud": tencentcloud,
         "tencentcloud.common": common_module,
         "tencentcloud.common.credential": credential_module,
+        "tencentcloud.common.profile": profile_module,
+        "tencentcloud.common.profile.client_profile": client_profile_module,
+        "tencentcloud.common.profile.http_profile": http_profile_module,
         "tencentcloud.cls": cls_package,
         "tencentcloud.cls.v20201016": v20201016,
         "tencentcloud.cls.v20201016.models": models_module,
@@ -212,6 +238,8 @@ async def test_cls_search_log_maps_topic_and_rows(
     request = state["search_request"]
     assert request.TopicId == "app"
     assert request.Query == "level:ERROR"
+    assert request.From == 1767225600000
+    assert request.To == 1767229200000
     assert request.Limit == 10
     assert request.Offset == 5
     assert rows[0]["content"] == "boom"

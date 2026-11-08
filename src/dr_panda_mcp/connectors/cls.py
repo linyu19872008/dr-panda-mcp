@@ -98,8 +98,9 @@ class _CLSClient:
                 request = models.SearchLogRequest()
                 request.TopicId = topic_id(topic)
                 request.Query = query
-                request.From = int(start.timestamp())
-                request.To = int(end.timestamp())
+                # Tencent CLS SearchLog requires Unix timestamps in milliseconds.
+                request.From = int(start.timestamp() * 1000)
+                request.To = int(end.timestamp() * 1000)
                 request.Limit = limit
                 request.Offset = offset
                 request.Sort = "desc"

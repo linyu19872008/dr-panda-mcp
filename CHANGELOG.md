@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-08
+
+### Fixed
+
+- CLS `SearchLog` now sends `From`/`To` as Unix timestamps in milliseconds, matching the Tencent Cloud API contract. The previous seconds values were interpreted as 1970 and returned zero logs.
+- Updated the fake CLS SDK and regression assertion for the 13-digit millisecond request values.
+
 ## [1.3.0] - 2026-11-08
 
 ### Added
