@@ -7,8 +7,20 @@
   <p class="field__label">{{ t('名称') }}</p>
   <p>{{ name or '—' }}</p>
   <p class="field__label">{{ t('MCP Token') }}</p>
-  <pre class="mono setup-secret">{{ token }}</pre>
+  <div class="token-copy">
+    <pre id="mcp-token-value" class="mono setup-secret">{{ token }}</pre>
+    <div class="token-copy__actions">
+      <button id="copy-mcp-token" class="btn btn--secondary btn--sm" type="button" hidden
+              aria-label="{{ t('复制 MCP Token') }}"
+              data-copied="{{ t('已复制') }}"
+              data-selected="{{ t('已选中，请按 ⌘C / Ctrl+C 复制') }}">{{ t('复制') }}</button>
+      <span id="copy-mcp-token-status" class="field__hint" role="status" aria-live="polite"></span>
+    </div>
+  </div>
   <div class="alert alert--warning"><div class="alert__body"><strong>{{ t('只显示一次') }}</strong><span class="alert__detail">{{ t('请把它配置到对应客户端；丢失后只能删除并重新生成。') }}</span></div></div>
   <a class="btn btn--primary" href="/me">{{ t('返回我的') }}</a>
 </div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/copy-token.js?v={{ script_version }}" defer></script>
 {% endblock %}

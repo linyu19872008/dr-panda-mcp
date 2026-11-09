@@ -26,6 +26,7 @@
       <span class="badge badge--type">{{ t(card.label) }}</span>
       <span class="type-card__arrow" aria-hidden="true">→</span>
     </span>
+    {% if card.note %}<span class="type-card__note">{{ t(card.note) }}</span>{% endif %}
   </a>
   {% endfor %}
 </div>

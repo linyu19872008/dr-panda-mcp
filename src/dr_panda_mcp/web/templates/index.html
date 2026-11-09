@@ -76,7 +76,7 @@
        {% if item.active %}aria-current="true"{% endif %}>{{ t(item.label) }}<span class="chip-link__count">{{ item.count }}</span></a>
     {% endfor %}
   </div>
-  {% if q or active_type %}<a class="link-reset" href="/{% if current_env %}?env={{ current_env.key }}{% endif %}">{{ t('清除筛选') }}</a>{% endif %}
+  {% if q or active_type %}<a class="link-reset" href="/targets{% if current_env %}?env={{ current_env.key }}{% endif %}">{{ t('清除筛选') }}</a>{% endif %}
 </form>
 {% endif %}
 
@@ -94,6 +94,7 @@
     {% for card in type_cards %}
     <a class="type-card type-card--sm" href="/targets/new?type={{ card.type }}{% if current_env %}&env={{ current_env.key }}{% endif %}">
       <span class="type-card__title">{{ t(card.label) }}</span>
+      {% if card.note %}<span class="type-card__note">{{ t(card.note) }}</span>{% endif %}
     </a>
     {% endfor %}
   </div>
@@ -102,7 +103,7 @@
 <section class="empty empty--sm">
   <h2>{{ t('没有匹配的目标') }}</h2>
   <p>{{ t('调整搜索词或类型筛选后再试。') }}</p>
-  <a class="btn btn--secondary" href="/{% if current_env %}?env={{ current_env.key }}{% endif %}">{{ t('清除筛选') }}</a>
+  <a class="btn btn--secondary" href="/targets{% if current_env %}?env={{ current_env.key }}{% endif %}">{{ t('清除筛选') }}</a>
 </section>
 {% else %}
 <div class="table-card">
@@ -136,7 +137,23 @@
         </td>
         <td data-label="{{ t('类型') }}"><span class="badge badge--type">{{ t(target.type_label) }}</span></td>
         <td data-label="{{ t('端点') }}" class="cell-endpoint"><span class="mono truncate" title="{{ target.endpoint }}">{{ t(target.endpoint) }}</span></td>
-        <td data-label="{{ t('授权范围') }}"><span class="muted">{{ t(target.scope_source, **target.scope_params) }}</span></td>
+        <td data-label="{{ t('授权范围') }}" class="cell-scope">
+          <details class="scope-summary">
+            <summary class="muted">{{ t(target.scope_source, **target.scope_params) }}</summary>
+            <div class="scope-summary__body">
+              {% for group in target.scope_groups %}
+              <div class="scope-line">
+                <span class="scope-line__label">{{ t(group.label) }}</span>
+                {% if group.unlimited %}<span class="muted">{{ t('不限') }}</span>
+                {% elif group.values %}{% for value in group.values %}<span class="scope-chip mono">{{ value }}</span>{% endfor %}
+                {% else %}<span class="muted">{{ t('未授权') }}</span>{% endif %}
+              </div>
+              {% else %}
+              <span class="muted">{{ t(target.scope_source, **target.scope_params) }}</span>
+              {% endfor %}
+            </div>
+          </details>
+        </td>
         <td data-label="{{ t('状态') }}">
           <form method="post" action="/targets/{{ target.id }}/toggle" class="inline-form"
                 data-submit-loading data-async-form data-row-action="toggle">
@@ -268,6 +285,7 @@
       {% for card in type_cards %}
       <a class="type-card type-card--sm" href="/targets/new?type={{ card.type }}{% if current_env %}&env={{ current_env.key }}{% endif %}">
         <span class="type-card__title">{{ t(card.label) }}</span>
+        {% if card.note %}<span class="type-card__note">{{ t(card.note) }}</span>{% endif %}
         <span class="type-card__arrow" aria-hidden="true">→</span>
       </a>
       {% endfor %}

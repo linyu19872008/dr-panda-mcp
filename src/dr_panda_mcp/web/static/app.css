@@ -971,6 +971,23 @@ ul {
 .scope-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; margin: 2px 0; }
 .scope-line__label { color: var(--text-muted); font-size: 12px; }
 .scope-chip { padding: 1px 6px; border-radius: var(--radius-pill); background: var(--surface-subtle); font-size: 12px; }
+.scope-summary { display: inline; }
+.scope-summary > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.scope-summary > summary::-webkit-details-marker { display: none; }
+.scope-summary > summary::after {
+  content: " ▾";
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.scope-summary[open] > summary::after { content: " ▴"; }
+.scope-summary__body {
+  margin-top: 6px;
+  max-width: 280px;
+}
+.field__hint--warn { color: var(--warning-text, #9a6700); }
 
 .link-strong {
   color: var(--text);

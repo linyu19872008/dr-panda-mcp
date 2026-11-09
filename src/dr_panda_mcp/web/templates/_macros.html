@@ -17,7 +17,11 @@
     <textarea class="input textarea" id="{{ field_id }}" name="{{ row.key }}" rows="{{ 6 if row.kind == 'pem' else 3 }}" spellcheck="false"{{ required }}{{ invalid }}{{ gate }}>{{ row.value }}</textarea>
   {%- elif row.kind == "select" -%}
     <select class="input select" id="{{ field_id }}" name="{{ row.key }}"{{ required }}{{ invalid }}{{ gate }}>
-      {%- for choice in row.choices %}<option value="{{ choice }}"{% if choice == row.value %} selected{% endif %}>{{ choice }}</option>{% endfor -%}
+      {%- for choice in row.choices -%}
+        {%- set choice_value = choice.value if choice is mapping else choice -%}
+        {%- set choice_label = choice.label if choice is mapping else choice -%}
+        <option value="{{ choice_value }}"{% if choice_value == row.value %} selected{% endif %}>{{ t(choice_label) }}</option>
+      {%- endfor -%}
     </select>
   {%- elif row.kind == "int" -%}
     <input class="input" type="number" inputmode="numeric" id="{{ field_id }}" name="{{ row.key }}" value="{{ row.value }}"{{ required }}{{ invalid }}{{ gate }}>
@@ -27,7 +31,8 @@
 {%- endmacro %}
 
 {% macro option_field(row) -%}
-<div class="field{% if row.kind == 'pem' or row.kind == 'list' %} field--full{% endif %}{% if row.error %} field--invalid{% endif %}">
+<div class="field{% if row.kind == 'pem' or row.kind == 'list' %} field--full{% endif %}{% if row.error %} field--invalid{% endif %}"
+     {% if row.show_when %}data-show-when="{{ row.show_when }}"{% endif %}>
   {% if row.kind == "bool" %}
   <label class="checkline checkline--field" for="field-{{ row.key }}">
     {{ control(row, 'field-' ~ row.key) }}

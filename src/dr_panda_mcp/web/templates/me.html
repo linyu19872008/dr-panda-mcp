@@ -70,7 +70,14 @@
         {% endif %}
       </div>
       <p class="field__label">{{ t('MCP 地址') }}</p>
-      <pre class="mono profile-endpoint">{{ mcp_url }}</pre>
+      <div class="token-copy">
+        <pre id="mcp-endpoint-value" class="mono profile-endpoint">{{ mcp_url }}</pre>
+        <div class="token-copy__actions">
+          <button class="btn btn--secondary btn--sm" type="button" data-copy-target="mcp-endpoint-value"
+                  data-copied="{{ t('已复制') }}" data-failed="{{ t('请选中文字后复制') }}" hidden>{{ t('复制') }}</button>
+          <span data-copy-status role="status" class="field__hint"></span>
+        </div>
+      </div>
 
       {% if tokens %}
       <div class="table-card profile-token-table">

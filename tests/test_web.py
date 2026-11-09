@@ -750,7 +750,7 @@ async def test_no_javascript_and_css_budget(runtime: Runtime) -> None:
         assert page.text.count("<script") == 1
         assert 'src="/static/app.js' in page.text
         assert "<script>" not in page.text
-    assert len(css.content) < 55_000
+    assert len(css.content) < 58_000
 
 
 async def test_required_secret_cannot_be_cleared_on_edit(runtime: Runtime) -> None:

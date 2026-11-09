@@ -55,11 +55,13 @@
         data-gate-baseline="{{ 'saved' if mode == 'edit' else 'none' }}"
         data-gate-hint-pending="{{ t('请先测试连接') }}"
         data-gate-hint-clean="{{ t('已通过连接测试，可以保存。') }}"
-        data-gate-hint-saved="{{ t('连接未修改，可以直接保存。') }}"
-        data-gate-hint-dirty="{{ t('配置已修改，请重新测试连接。') }}"
+        data-gate-hint-saved="{{ t('连接未改动；授权范围可直接保存，无需重测。') }}"
+        data-gate-hint-dirty="{{ t('连接相关配置已修改，请重新测试连接。') }}"
         data-probe-ok-title="{{ t('连接测试通过') }}"
         data-probe-fail-title="{{ t('连接测试失败') }}"
         data-duration-label="{{ t('耗时') }}"
+        data-nacos-v3-data-hint="{{ t('Nacos 3 不支持「全部」配置列表，请改为「仅白名单」。') }}"
+        data-nacos-v3-service-hint="{{ t('Nacos 3 不支持「全部」服务列表，请改为「仅白名单」。') }}"
         action="{{ '/targets' if mode == 'create' else '/targets/' ~ existing.id }}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="type" value="{{ spec.type }}">
@@ -188,7 +190,7 @@
         </div>
       </div>
     </div>
-    <p class="field__hint form-gate-hint" data-gate-hint>{% if mode == 'edit' %}{{ t('连接未修改，可以直接保存。') }}{% else %}{{ t('请先测试连接') }}{% endif %}</p>
+    <p class="field__hint form-gate-hint" data-gate-hint>{% if mode == 'edit' %}{{ t('连接未改动；授权范围可直接保存，无需重测。') }}{% else %}{{ t('请先测试连接') }}{% endif %}</p>
     <div class="form-actions">
       <a class="btn btn--secondary" href="/targets">{{ t('取消') }}</a>
       <button class="btn btn--secondary" type="button" data-probe-button

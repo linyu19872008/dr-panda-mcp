@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-11-10
+
+### Fixed
+
+- Admin target list "clear filters" now stays on `/targets` instead of jumping to overview.
+
+### Changed
+
+- Select options show localized labels (Nacos scope/API version, Mongo auth mode).
+- Type picker cards show the short capability note.
+- Nacos whitelist fields hide unless scope mode is "selected"; v3 + all shows an inline warning.
+- Jenkins "allow console logs" moved into the authorization scope section.
+- Target list scope column expands to show detailed allowlists.
+- Probe gate copy clarifies that scope-only edits do not need a retest.
+- Overview empty state adds CTAs to register targets / create a token.
+- MCP endpoint and standalone token page gain copy buttons; audit filter selects auto-submit.
+
 ## [1.9.1] - 2026-11-10
 
 ### Fixed

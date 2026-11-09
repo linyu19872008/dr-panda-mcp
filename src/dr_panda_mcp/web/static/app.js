@@ -1064,3 +1064,93 @@
   mode.addEventListener("change", () => apply(true));
   apply(false);
 })();
+
+// Progressive disclosure: fields with data-show-when="control:value".
+(() => {
+  const fields = Array.from(document.querySelectorAll("[data-show-when]"));
+  if (!fields.length) return;
+  const parse = (raw) => {
+    const index = raw.indexOf(":");
+    if (index <= 0) return null;
+    return { name: raw.slice(0, index), value: raw.slice(index + 1) };
+  };
+  const apply = () => {
+    fields.forEach((field) => {
+      const rule = parse(field.dataset.showWhen || "");
+      if (!rule) return;
+      const control = document.querySelector(`[name="${rule.name}"]`);
+      if (!(control instanceof HTMLElement)) return;
+      const current =
+        control instanceof HTMLInputElement && control.type === "checkbox"
+          ? control.checked
+            ? "on"
+            : "off"
+          : control.value;
+      const visible = current === rule.value;
+      field.hidden = !visible;
+      if (!visible && !field.querySelector(".field--invalid")) {
+        field.querySelectorAll("input, textarea, select").forEach((input) => {
+          input.removeAttribute("required");
+          input.removeAttribute("aria-required");
+        });
+      }
+    });
+  };
+  document.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.name) return;
+    if (fields.some((field) => (field.dataset.showWhen || "").startsWith(`${target.name}:`))) {
+      apply();
+    }
+  });
+  apply();
+})();
+
+// Nacos: warn when api_version=v3 and scope mode is all.
+(() => {
+  const form = document.querySelector("form[data-target-form]");
+  const api = document.querySelector('select[name="api_version"]');
+  const dataScope = document.querySelector('select[name="data_scope"]');
+  const serviceScope = document.querySelector('select[name="service_scope"]');
+  if (!form || !api || (!dataScope && !serviceScope)) return;
+  const ensureHint = (select) => {
+    if (!(select instanceof HTMLSelectElement)) return null;
+    const field = select.closest(".field");
+    if (!field) return null;
+    let hint = field.querySelector("[data-nacos-v3-hint]");
+    if (!hint) {
+      hint = document.createElement("p");
+      hint.className = "field__hint field__hint--warn";
+      hint.dataset.nacosV3Hint = "true";
+      field.append(hint);
+    }
+    return hint;
+  };
+  const apply = () => {
+    const isV3 = api.value === "v3";
+    [
+      [dataScope, form.dataset.nacosV3DataHint || ""],
+      [serviceScope, form.dataset.nacosV3ServiceHint || ""],
+    ].forEach(([select, message]) => {
+      const hint = ensureHint(select);
+      if (!hint) return;
+      const show = isV3 && select && select.value === "all";
+      hint.hidden = !show;
+      hint.textContent = show ? message : "";
+    });
+  };
+  [api, dataScope, serviceScope].forEach((el) => el && el.addEventListener("change", apply));
+  apply();
+})();
+
+// Audit filters: changing a select submits immediately (chips already navigate).
+(() => {
+  document.querySelectorAll("form[data-auto-submit]").forEach((form) => {
+    form.querySelectorAll("[data-auto-submit-control]").forEach((control) => {
+      control.addEventListener("change", () => {
+        if (typeof form.requestSubmit === "function") form.requestSubmit();
+        else form.submit();
+      });
+    });
+  });
+})();

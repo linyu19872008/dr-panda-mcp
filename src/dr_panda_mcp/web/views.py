@@ -32,6 +32,15 @@ def split_install_command(text: str | None) -> tuple[str | None, str | None]:
 
 
 @dataclass(frozen=True)
+class ScopeDetail:
+    """一个授权范围分组的细粒度展示（用于目标目录）。"""
+
+    label: str
+    values: tuple[str, ...] = ()
+    unlimited: bool = False
+
+
+@dataclass(frozen=True)
 class TargetView:
     id: int
     type: str
@@ -56,15 +65,7 @@ class TargetView:
     environment_title: str = ""
     environment_enabled: bool = True
     operator_notes: str = ""
-
-
-@dataclass(frozen=True)
-class ScopeDetail:
-    """一个授权范围分组的细粒度展示（用于只读目标目录）。"""
-
-    label: str
-    values: tuple[str, ...] = ()
-    unlimited: bool = False
+    scope_groups: tuple[ScopeDetail, ...] = ()
 
 
 _SCOPE_FIELDS: dict[str, tuple[tuple[str, str], ...]] = {
@@ -264,6 +265,7 @@ def to_view(target: Target) -> TargetView:
         environment_title=target.environment_title,
         environment_enabled=target.environment_enabled,
         operator_notes=target.operator_notes,
+        scope_groups=tuple(scope_details(target)),
     )
 
 

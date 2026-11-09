@@ -28,7 +28,19 @@
   <div class="stat"><span class="stat__label">{{ t('近 24 小时工具调用') }}</span><span class="stat__value">{{ call_count }}</span></div>
 </div>
 {% if not queryable %}
-<p class="page-subtitle">{{ t('还没有可查询的目标，请联系管理员') }}</p>
+<div class="empty empty--sm">
+  <h2>{{ t('还没有可查询的目标') }}</h2>
+  {% if is_admin %}
+  <p>{{ t('先登记目标并生成 MCP Token，才能开始排查。') }}</p>
+  <div class="page-header__actions">
+    <a class="btn btn--primary" href="/targets">{{ t('去登记目标') }}</a>
+    {% if not token_count %}<a class="btn btn--secondary" href="/me">{{ t('去生成 Token') }}</a>{% endif %}
+  </div>
+  {% else %}
+  <p>{{ t('还没有可查询的目标，请联系管理员') }}</p>
+  {% if not token_count %}<a class="btn btn--secondary" href="/me">{{ t('去生成 Token') }}</a>{% endif %}
+  {% endif %}
+</div>
 {% endif %}
 
 <div class="section-head">

@@ -33,6 +33,8 @@ class Field:
     required: bool = False
     default: Any = None
     choices: tuple[str, ...] = ()
+    # Parallel display labels for select options (falls back to the raw value).
+    choice_labels: tuple[str, ...] = ()
     help: str = ""
 
 
@@ -107,7 +109,8 @@ TYPE_SPECS: dict[str, TypeSpec] = {
                 required=True,
                 default="none",
                 choices=("none", "password", "uri"),
-                help="none=无认证；password=用户名密码；uri=完整连接串（SRV/X.509/TLS 等高级选项）。",
+                choice_labels=("无认证", "用户名密码", "URI"),
+                help="无认证 / 用户名密码 / 完整连接串（SRV、X.509、TLS 等高级选项用 URI）。",
             ),
             Field("host", "主机", "text"),
             Field("port", "端口", "int", default=27017),
@@ -303,7 +306,8 @@ TYPE_SPECS: dict[str, TypeSpec] = {
                 "select",
                 default="auto",
                 choices=("auto", "v1", "v3"),
-                help="auto=自动探测；v1=1.x/2.x OpenAPI；v3=3.x client API。",
+                choice_labels=("自动探测", "v1（1.x/2.x）", "v3（3.x）"),
+                help="自动探测适合大多数部署；Nacos 3 的全部列表 OpenAPI 受限，请用「仅白名单」。",
             ),
             Field(
                 "allowed_namespaces",
@@ -318,11 +322,12 @@ TYPE_SPECS: dict[str, TypeSpec] = {
                 "select",
                 default="all",
                 choices=("all", "selected"),
-                help="all=允许所选 namespace/group 下全部 dataId；selected=只允许下面的 dataId。",
+                choice_labels=("全部（授权范围内）", "仅下列白名单"),
+                help="「全部」允许所选 namespace/group 下全部 dataId；「仅白名单」只允许下面列出的 dataId。",
             ),
             Field(
                 "allowed_data_ids",
-                "允许的 dataId（仅 selected 模式，一行一个）",
+                "允许的 dataId（仅白名单模式，一行一个）",
                 "list",
             ),
             Field(
@@ -331,11 +336,12 @@ TYPE_SPECS: dict[str, TypeSpec] = {
                 "select",
                 default="all",
                 choices=("all", "selected"),
-                help="all=允许所选 namespace/group 下全部服务；selected=只允许下面的服务。",
+                choice_labels=("全部（授权范围内）", "仅下列白名单"),
+                help="「全部」允许所选 namespace/group 下全部服务；「仅白名单」只允许下面列出的服务。",
             ),
             Field(
                 "allowed_services",
-                "允许的服务名（仅 selected 模式，一行一个）",
+                "允许的服务名（仅白名单模式，一行一个）",
                 "list",
             ),
             Field("verify_tls", "校验 TLS", "bool", default=True),
@@ -682,15 +688,15 @@ def _cross_validate(
         else:
             service_scope = str(options.get("service_scope") or "all")
         if data_scope == "selected" and not options.get("allowed_data_ids"):
-            errors["allowed_data_ids"] = "selected 模式至少填写一个允许的 dataId，或改为 all"
+            errors["allowed_data_ids"] = "白名单模式至少填写一个允许的 dataId，或改为「全部」"
         if service_scope == "selected" and not options.get("allowed_services"):
-            errors["allowed_services"] = "selected 模式至少填写一个允许的服务名，或改为 all"
+            errors["allowed_services"] = "白名单模式至少填写一个允许的服务名，或改为「全部」"
         api_version = str(options.get("api_version") or "auto").strip().lower()
         if api_version == "v3" and data_scope == "all":
-            errors["data_scope"] = "Nacos 3（api_version=v3）不支持 data_scope=all，请改为 selected"
+            errors["data_scope"] = "Nacos 3（API 版本=v3）不支持「全部」配置范围，请改为「仅白名单」"
         if api_version == "v3" and service_scope == "all":
             errors["service_scope"] = (
-                "Nacos 3（api_version=v3）不支持 service_scope=all，请改为 selected"
+                "Nacos 3（API 版本=v3）不支持「全部」服务范围，请改为「仅白名单」"
             )
         if not namespaces:
             errors["allowed_namespaces"] = "至少填写一个允许的命名空间"
@@ -838,7 +844,6 @@ ADVANCED_OPTION_KEYS = frozenset(
         "tls",
         "verify_tls",
         "ca_pem",
-        "allow_console",
         "allow_processlist",
         "default_window_minutes",
         "max_window_minutes",
@@ -846,7 +851,12 @@ ADVANCED_OPTION_KEYS = frozenset(
 )
 ADVANCED_SECRET_KEYS = frozenset({"client_cert", "client_key"})
 CONNECTION_LIST_KEYS = frozenset({"hosts", "bootstrap_servers"})
-SCOPE_KEYS = frozenset({"key_prefix", "data_scope", "service_scope"})
+SCOPE_KEYS = frozenset({"key_prefix", "data_scope", "service_scope", "allow_console"})
+# Fields only relevant when another control has a specific value (progressive disclosure).
+SHOW_WHEN = {
+    "allowed_data_ids": "data_scope:selected",
+    "allowed_services": "service_scope:selected",
+}
 
 
 def option_rows(
@@ -865,6 +875,14 @@ def option_rows(
             if field.kind == "list" or field.key in SCOPE_KEYS
             else "connection"
         )
+        labels = field.choice_labels or field.choices
+        choice_items = [
+            {
+                "value": value,
+                "label": labels[index] if index < len(labels) else value,
+            }
+            for index, value in enumerate(field.choices)
+        ]
         rows.append(
             {
                 "key": field.key,
@@ -872,10 +890,11 @@ def option_rows(
                 "kind": field.kind,
                 "value": values.get(field.key, ""),
                 "error": errors.get(field.key),
-                "choices": field.choices,
+                "choices": choice_items,
                 "required": field.required,
                 "help": field.help,
                 "section": section,
+                "show_when": SHOW_WHEN.get(field.key),
                 # 授权范围、风险开关和时间窗不影响连通性。
                 "gate": field.key not in PROBE_SKIP_OPTION_KEYS and section != "scope",
             }

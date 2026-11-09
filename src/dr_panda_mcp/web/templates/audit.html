@@ -8,7 +8,7 @@
   </div>
 </div>
 
-<form class="toolbar audit-filters" method="get" action="/audit" role="search">
+<form class="toolbar audit-filters" method="get" action="/audit" role="search" data-auto-submit>
   <input type="hidden" name="range" value="{{ range_key }}">
   <div class="filter-chips" role="group" aria-label="{{ t('时间范围') }}">
     {% for item in ranges %}
@@ -16,19 +16,19 @@
        {% if item.active %}aria-current="true"{% endif %}>{{ t(item.label) }}</a>
     {% endfor %}
   </div>
-  <select class="input input--compact" name="action" aria-label="{{ t('动作') }}">
+  <select class="input input--compact" name="action" aria-label="{{ t('动作') }}" data-auto-submit-control>
     <option value="{{ all_value }}"{% if action == all_value %} selected{% endif %}>{{ t('全部动作') }}</option>
     {% for code, label in actions %}
     <option value="{{ code }}"{% if action == code %} selected{% endif %}>{{ t(label) }}</option>
     {% endfor %}
   </select>
-  <select class="input input--compact" name="env" aria-label="{{ t('所在环境') }}">
+  <select class="input input--compact" name="env" aria-label="{{ t('所在环境') }}" data-auto-submit-control>
     <option value="">{{ t('全部环境') }}</option>
     {% for item in environments %}
     <option value="{{ item.key }}"{% if env == item.key %} selected{% endif %}>{% if item.key == 'default' and item.title == '默认' %}{{ t('默认') }}{% else %}{{ item.title }}{% endif %} · {{ item.key }}</option>
     {% endfor %}
   </select>
-  <select class="input input--compact" name="outcome" aria-label="{{ t('结果') }}">
+  <select class="input input--compact" name="outcome" aria-label="{{ t('结果') }}" data-auto-submit-control>
     <option value="">{{ t('全部结果') }}</option>
     <option value="ok"{% if outcome == 'ok' %} selected{% endif %}>{{ t('成功') }}</option>
     <option value="failed"{% if outcome == 'failed' %} selected{% endif %}>{{ t('失败') }}</option>
