@@ -754,5 +754,15 @@
   "排查提示（AI 可见）": "Troubleshooting notes (visible to AI)",
   "例如：生产主库，只读排障；默认看最近 30 分钟。": "Example: production primary; read-only troubleshooting; default to the last 30 minutes.",
   "写给 AI 的排查建议，不会改变授权范围和只读规则。不要填写密码、Token 或私钥。最多 512 个字符。": "Guidance for the AI. It cannot change authorization scope or read-only rules. Do not include passwords, tokens or private keys. Maximum 512 characters.",
-  "排查提示不能超过 512 个字符": "Troubleshooting notes must not exceed 512 characters"
+  "排查提示不能超过 512 个字符": "Troubleshooting notes must not exceed 512 characters",
+  "配置读取范围": "Config read scope",
+  "all=允许所选 namespace/group 下全部 dataId；selected=只允许下面的 dataId。": "all = every dataId under the allowed namespaces/groups; selected = only the dataIds listed below.",
+  "服务读取范围": "Service read scope",
+  "all=允许所选 namespace/group 下全部服务；selected=只允许下面的服务。": "all = every service under the allowed namespaces/groups; selected = only the services listed below.",
+  "允许的 dataId（仅 selected 模式，一行一个）": "Allowed dataIds (selected mode only; one per line)",
+  "允许的服务名（仅 selected 模式，一行一个）": "Allowed services (selected mode only; one per line)",
+  "selected 模式至少填写一个允许的 dataId，或改为 all": "selected mode requires at least one dataId, or switch to all",
+  "selected 模式至少填写一个允许的服务名，或改为 all": "selected mode requires at least one service, or switch to all",
+  "配置范围": "Config scope",
+  "服务范围": "Service scope"
 }

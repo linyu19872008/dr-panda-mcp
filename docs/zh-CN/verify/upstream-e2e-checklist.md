@@ -35,9 +35,11 @@
 - [ ] Nacos 3.x `nacos_config` 通过 v3 client API 读取内容
 - [ ] Nacos 3.x `nacos_configs` 只返回 `allowed_data_ids` 内的 dataId
 - [ ] Nacos 3.x `nacos_services` 只返回 `allowed_services`
-- [ ] `nacos_configs` 只返回 `allowed_data_ids`
+- [ ] `data_scope=all` 时 `nacos_configs` 返回 namespace/group 下全部配置
+- [ ] `data_scope=selected` 时 `nacos_configs` 只返回 `allowed_data_ids`
 - [ ] `nacos_config` 读取内容正确
-- [ ] `nacos_services` 只返回 `allowed_services`
+- [ ] `service_scope=all` 时 `nacos_services` 返回全部服务
+- [ ] `service_scope=selected` 时 `nacos_services` 只返回 `allowed_services`
 - [ ] `nacos_instances` 返回健康、端口、集群和 metadata
 - [ ] 未授权 namespace/group/dataId/service → `SCOPE_DENIED`
 

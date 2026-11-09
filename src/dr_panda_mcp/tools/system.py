@@ -185,7 +185,14 @@ _SCOPE_FIELDS: dict[str, tuple[str, ...]] = {
     "kafka": ("allowed_topics",),
     "cls": ("allowed_topics",),
     "gitlab": ("allowed_projects",),
-    "nacos": ("allowed_namespaces", "allowed_groups", "allowed_data_ids", "allowed_services"),
+    "nacos": (
+        "allowed_namespaces",
+        "allowed_groups",
+        "data_scope",
+        "allowed_data_ids",
+        "service_scope",
+        "allowed_services",
+    ),
     "jenkins": ("allowed_jobs", "allowed_nodes"),
 }
 
@@ -195,8 +202,10 @@ def _target_scope(target: Target) -> dict[str, Any]:
     scope: dict[str, Any] = {}
     for field in _SCOPE_FIELDS.get(target.type, ()):
         value = target.options.get(field)
-        if field in {"default_db", "key_prefix"}:
+        if field in {"default_db", "key_prefix", "data_scope", "service_scope"}:
             text = str(value).strip() if value is not None else ""
+            if not text and target.type == "nacos" and field in {"data_scope", "service_scope"}:
+                text = "selected"
             scope[field] = text or None
         else:
             scope[field] = [str(item) for item in (value or [])]

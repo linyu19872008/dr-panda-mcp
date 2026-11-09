@@ -183,6 +183,7 @@ async def test_create_nacos_target(runtime: Runtime) -> None:
     assert target is not None
     assert target.type == "nacos"
     assert target.options["allowed_data_ids"] == ["demo.yaml"]
+    assert target.options["data_scope"] == "all"
 
 
 async def test_create_jenkins_target(runtime: Runtime) -> None:

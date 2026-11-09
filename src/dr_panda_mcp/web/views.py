@@ -78,7 +78,9 @@ _SCOPE_FIELDS: dict[str, tuple[tuple[str, str], ...]] = {
     "nacos": (
         ("allowed_namespaces", "允许的命名空间"),
         ("allowed_groups", "允许的 group"),
+        ("data_scope", "配置范围"),
         ("allowed_data_ids", "允许的 dataId"),
+        ("service_scope", "服务范围"),
         ("allowed_services", "允许的服务"),
     ),
     "jenkins": (

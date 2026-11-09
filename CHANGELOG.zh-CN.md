@@ -6,6 +6,15 @@
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-10
+
+### 新增
+
+- Nacos 新增 `data_scope` / `service_scope`，支持 `all` 或 `selected`。
+- 新建 Nacos 目标默认 `all`（仍限定在授权的 namespace/group 内）；已有目标缺少 mode 时保持 `selected`。
+- 多 namespace/group 的 Nacos 探活会选择可用范围，不再报 `namespace is required`。
+- v1 配置/服务列表支持 all；Nacos 3 的 all 列表限制会明确报错。
+
 ## [1.8.0] - 2026-11-09
 
 ### 新增

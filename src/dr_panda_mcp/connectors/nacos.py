@@ -44,6 +44,12 @@ def _api_version(target: Target) -> str:
     return value if value in _API_VERSIONS else "auto"
 
 
+def _scope_mode(target: Target, key: str) -> str:
+    """Legacy targets without a mode stay on the old explicit allowlist behavior."""
+    value = str(target.options.get(key) or "selected").strip().lower()
+    return "all" if value == "all" else "selected"
+
+
 def ensure_namespace(target: Target, value: str) -> str:
     allowed = _items(target, "allowed_namespaces")
     candidate = (value or "").strip()
@@ -79,6 +85,8 @@ def ensure_data_id(target: Target, value: str) -> str:
     candidate = (value or "").strip()
     if not candidate:
         raise errors.InvalidArgument("data_id is required")
+    if _scope_mode(target, "data_scope") == "all":
+        return candidate
     if not allowed:
         raise errors.ScopeDenied(f"target {target.name} has no authorized data IDs")
     if candidate not in allowed:
@@ -93,6 +101,8 @@ def ensure_service(target: Target, value: str) -> str:
     candidate = (value or "").strip()
     if not candidate:
         raise errors.InvalidArgument("service is required")
+    if _scope_mode(target, "service_scope") == "all":
+        return candidate
     if not allowed:
         raise errors.ScopeDenied(f"target {target.name} has no authorized services")
     if candidate not in allowed:
@@ -240,37 +250,61 @@ class _NacosClient:
         return _v3_config_content(_v3_data(response, "config"))
 
     async def ping(self) -> None:
-        namespace = ensure_namespace(self.target, "")
-        group = ensure_group(self.target, "")
+        namespaces = _items(self.target, "allowed_namespaces")
+        groups = _items(self.target, "allowed_groups")
+        if not namespaces or not groups:
+            raise errors.ScopeDenied(f"target {self.target.name} has no authorized Nacos scope")
+
         client = self._client()
         try:
             version = await self._ensure_version(client)
         finally:
             await client.aclose()
+
         if version == "v1":
-            # A config list request validates both auth and namespace/group access.
-            await self._get(
-                "/v1/cs/configs",
-                {
-                    "search": "accurate",
-                    "dataId": "",
-                    "group": group,
-                    "tenant": _tenant(namespace),
-                    "pageNo": 1,
-                    "pageSize": 1,
-                },
-            )
-        else:
-            # v3 client API has no list endpoint; validate login and, when
-            # configured, one real config rather than calling an admin API.
-            client = self._client()
-            try:
-                await self._token(client)
-            finally:
-                await client.aclose()
+            # Probe any one authorized namespace/group pair. Do not require the
+            # caller to choose when the target authorizes multiple values.
+            last_error: Exception | None = None
+            for namespace in namespaces:
+                for group in groups:
+                    try:
+                        await self._get(
+                            "/v1/cs/configs",
+                            {
+                                "search": "accurate",
+                                "dataId": "",
+                                "group": group,
+                                "tenant": _tenant(namespace),
+                                "pageNo": 1,
+                                "pageSize": 1,
+                            },
+                        )
+                        return
+                    except errors.UpstreamAuthError:
+                        raise
+                    except errors.DrPandaError as exc:
+                        last_error = exc
+            if last_error is not None:
+                raise last_error
+            return
+
+        # v3 has no list-all OpenAPI. Validate login and, when a concrete
+        # allowlist is configured, one real read; otherwise login is enough.
+        client = self._client()
+        try:
+            await self._token(client)
+        finally:
+            await client.aclose()
+        namespace = namespaces[0]
+        group = groups[0]
+        if _scope_mode(self.target, "data_scope") == "selected":
             allowed_ids = _items(self.target, "allowed_data_ids")
             if allowed_ids:
                 await self._v3_config(namespace, group, allowed_ids[0])
+        elif _scope_mode(self.target, "service_scope") == "selected":
+            allowed_services = _items(self.target, "allowed_services")
+            if allowed_services:
+                await self.instances(namespace=namespace, group=group, service=allowed_services[0])
 
     async def configs(
         self,
@@ -282,8 +316,9 @@ class _NacosClient:
     ) -> tuple[list[dict[str, Any]], int]:
         chosen_namespace = ensure_namespace(self.target, namespace)
         chosen_group = ensure_group(self.target, group)
+        data_scope = _scope_mode(self.target, "data_scope")
         allowed_ids = _items(self.target, "allowed_data_ids")
-        if not allowed_ids:
+        if data_scope == "selected" and not allowed_ids:
             raise errors.ScopeDenied(f"target {self.target.name} has no authorized data IDs")
 
         client = self._client()
@@ -318,13 +353,21 @@ class _NacosClient:
                     "md5": item.get("md5"),
                 }
                 for item in items
-                if isinstance(item, dict) and (item.get("dataId") in allowed_ids)
+                if isinstance(item, dict)
+                and (data_scope == "all" or item.get("dataId") in allowed_ids)
             ]
             total = int(payload.get("totalCount") or 0)
             return rows, total
 
         # v3: the scope is the inventory. Query each allowed dataId through the
-        # read-only client API; no admin list endpoint is required.
+        # read-only client API; no admin list endpoint is required. There is no
+        # v3 client API to enumerate all configs, so all-scope discovery needs
+        # explicit IDs (or a v1-compatible deployment).
+        if data_scope == "all":
+            raise errors.InvalidArgument(
+                "Nacos 3 does not expose a list-all configs OpenAPI; use data_scope=selected "
+                "or switch the Nacos deployment to a v1-compatible API"
+            )
         start = (page - 1) * page_size
         candidates = allowed_ids[start : start + page_size]
         rows: list[dict[str, Any]] = []
@@ -378,8 +421,9 @@ class _NacosClient:
     ) -> tuple[list[dict[str, Any]], int]:
         chosen_namespace = ensure_namespace(self.target, namespace)
         chosen_group = ensure_group(self.target, group)
+        service_scope = _scope_mode(self.target, "service_scope")
         allowed_services = _items(self.target, "allowed_services")
-        if not allowed_services:
+        if service_scope == "selected" and not allowed_services:
             raise errors.ScopeDenied(f"target {self.target.name} has no authorized services")
 
         client = self._client()
@@ -390,6 +434,11 @@ class _NacosClient:
         if version == "v3":
             # v3 client OpenAPI exposes instance lookup but not service list.
             # Return the explicit scope rather than requiring an admin token.
+            if service_scope == "all":
+                raise errors.InvalidArgument(
+                    "Nacos 3 does not expose a list-all services OpenAPI; use service_scope=selected "
+                    "or switch the Nacos deployment to a v1-compatible API"
+                )
             start = (page - 1) * page_size
             selected = allowed_services[start : start + page_size]
             rows = [
@@ -414,7 +463,7 @@ class _NacosClient:
         rows = [
             {"service": str(name), "group": chosen_group, "namespace": chosen_namespace}
             for name in names
-            if str(name) in allowed_services
+            if service_scope == "all" or str(name) in allowed_services
         ]
         total = int(payload.get("count") or 0)
         return rows, total

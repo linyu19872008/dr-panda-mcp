@@ -313,13 +313,29 @@ TYPE_SPECS: dict[str, TypeSpec] = {
             ),
             Field("allowed_groups", "允许的 group（一行一个）", "list", required=True),
             Field(
+                "data_scope",
+                "配置读取范围",
+                "select",
+                default="all",
+                choices=("all", "selected"),
+                help="all=允许所选 namespace/group 下全部 dataId；selected=只允许下面的 dataId。",
+            ),
+            Field(
                 "allowed_data_ids",
-                "允许的 dataId（一行一个，空=拒绝配置读取）",
+                "允许的 dataId（仅 selected 模式，一行一个）",
                 "list",
             ),
             Field(
+                "service_scope",
+                "服务读取范围",
+                "select",
+                default="all",
+                choices=("all", "selected"),
+                help="all=允许所选 namespace/group 下全部服务；selected=只允许下面的服务。",
+            ),
+            Field(
                 "allowed_services",
-                "允许的服务名（一行一个，空=拒绝服务读取）",
+                "允许的服务名（仅 selected 模式，一行一个）",
                 "list",
             ),
             Field("verify_tls", "校验 TLS", "bool", default=True),
@@ -433,6 +449,10 @@ def initial_values(
         "operator_notes": target.operator_notes if target else "",
     }
     options = target.options if target else {}
+    if spec.type == "nacos" and target is not None:
+        options = dict(options)
+        options.setdefault("data_scope", "selected")
+        options.setdefault("service_scope", "selected")
     if spec.type == "mongo" and target is not None and "auth_mode" not in options:
         options = dict(options)
         options["auth_mode"] = _infer_mongo_auth_mode(target)
@@ -651,6 +671,12 @@ def _cross_validate(
     if spec.type == "nacos":
         namespaces = options.get("allowed_namespaces") or []
         groups = options.get("allowed_groups") or []
+        data_scope = str(options.get("data_scope") or "all")
+        service_scope = str(options.get("service_scope") or "all")
+        if data_scope == "selected" and not options.get("allowed_data_ids"):
+            errors["allowed_data_ids"] = "selected 模式至少填写一个允许的 dataId，或改为 all"
+        if service_scope == "selected" and not options.get("allowed_services"):
+            errors["allowed_services"] = "selected 模式至少填写一个允许的服务名，或改为 all"
         if not namespaces:
             errors["allowed_namespaces"] = "至少填写一个允许的命名空间"
         if not groups:
@@ -805,7 +831,7 @@ ADVANCED_OPTION_KEYS = frozenset(
 )
 ADVANCED_SECRET_KEYS = frozenset({"client_cert", "client_key"})
 CONNECTION_LIST_KEYS = frozenset({"hosts", "bootstrap_servers"})
-SCOPE_KEYS = frozenset({"key_prefix"})
+SCOPE_KEYS = frozenset({"key_prefix", "data_scope", "service_scope"})
 
 
 def option_rows(

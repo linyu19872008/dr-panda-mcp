@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-10
+
+### Added
+
+- Nacos `data_scope` and `service_scope` modes: `all` or `selected`.
+- New Nacos targets default to `all` within authorized namespaces/groups; legacy targets without a mode remain `selected`.
+- Multi-namespace/group Nacos probes now select an authorized scope instead of failing with "namespace is required".
+- v1 config/service listing supports all-scope mode; Nacos 3 all-scope listing reports its OpenAPI limitation explicitly.
+
 ## [1.8.0] - 2026-11-09
 
 ### Added

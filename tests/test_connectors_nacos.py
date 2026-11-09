@@ -11,13 +11,17 @@ from tests.fakes import make_target
 
 
 def _target(*, data_ids: list[str] | None = None, services: list[str] | None = None,
-            username: str = "", api_version: str = "auto") -> Any:
+            username: str = "", api_version: str = "auto",
+            data_scope: str = "selected", service_scope: str = "selected",
+            namespaces: list[str] | None = None, groups: list[str] | None = None) -> Any:
     options: dict[str, Any] = {
         "base_url": "http://nacos.test:8848",
         "api_version": api_version,
-        "allowed_namespaces": ["public"],
-        "allowed_groups": ["DEFAULT_GROUP"],
+        "allowed_namespaces": namespaces if namespaces is not None else ["public"],
+        "allowed_groups": groups if groups is not None else ["DEFAULT_GROUP"],
+        "data_scope": data_scope,
         "allowed_data_ids": data_ids if data_ids is not None else ["demo.yaml"],
+        "service_scope": service_scope,
         "allowed_services": services if services is not None else ["demo"],
         "timeout_s": "10",
     }
@@ -218,3 +222,78 @@ async def test_nacos_v3_detects_and_uses_client_api() -> None:
         not request.url.path.startswith("/v3/admin")
         for request in requests
     )
+
+
+async def test_nacos_probe_selects_a_scope_when_multiple_are_configured() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.path.endswith("/v1/console/health/liveness"):
+            return httpx.Response(200, json={"status": "UP"})
+        if request.url.path.endswith("/v1/cs/configs"):
+            return httpx.Response(200, json={"totalCount": 0, "pageItems": []})
+        return httpx.Response(404)
+
+    target = _target(
+        namespaces=["cloud_21_test", "public_dubbo"],
+        groups=["DEFAULT_GROUP", "mapping", "dubbo"],
+    )
+    await _client(target, handler).ping()
+
+    config_request = next(
+        request for request in requests if request.url.path.endswith("/v1/cs/configs")
+    )
+    assert config_request.url.params["tenant"] == "cloud_21_test"
+    assert config_request.url.params["group"] == "DEFAULT_GROUP"
+
+
+async def test_nacos_all_scope_v1_lists_unfiltered_and_reads_any_data_id() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.path.endswith("/v1/console/health/liveness"):
+            return httpx.Response(200, json={"status": "UP"})
+        if request.url.path.endswith("/v1/cs/configs"):
+            if request.url.params.get("dataId"):
+                return httpx.Response(200, text="unrestricted")
+            return httpx.Response(
+                200,
+                json={
+                    "totalCount": 2,
+                    "pageItems": [
+                        {"dataId": "a.yaml", "group": "DEFAULT_GROUP", "type": "yaml"},
+                        {"dataId": "b.yaml", "group": "DEFAULT_GROUP", "type": "yaml"},
+                    ],
+                },
+            )
+        return httpx.Response(404)
+
+    target = _target(
+        data_ids=[], services=[], data_scope="all", service_scope="all"
+    )
+    client = _client(target, handler)
+    await client.ping()
+    rows, total = await client.configs(namespace="", group="", page=1, page_size=10)
+    content = await client.config(namespace="", group="", data_id="anything.yaml")
+
+    assert total == 2
+    assert [row["data_id"] for row in rows] == ["a.yaml", "b.yaml"]
+    assert content == "unrestricted"
+
+
+async def test_nacos_all_scope_v3_configs_reports_listing_limitation() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/v1/console/health/liveness"):
+            return httpx.Response(410, json={"message": "use v3"})
+        if request.url.path.endswith("/v3/client/cs/config"):
+            return httpx.Response(200, json={"code": 0, "data": {"content": "x"}})
+        return httpx.Response(404)
+
+    client = _client(
+        _target(data_ids=[], services=[], data_scope="all", service_scope="all"),
+        handler,
+    )
+    with pytest.raises(errors.InvalidArgument):
+        await client.configs(namespace="", group="", page=1, page_size=10)
