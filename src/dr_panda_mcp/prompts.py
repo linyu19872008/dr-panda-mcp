@@ -18,7 +18,7 @@ Investigation order:
 4. If you have a trace id, start with cls_search using trace id + time window; otherwise search by service name and time window.
 5. Call gitlab_search_code with the exception class name, stack trace, or raw log text. Once you get a hit, read the code with gitlab_get_file and check recent changes with gitlab_blame.
 6. For symptoms like slow queries or data inconsistency, use mysql_explain and mysql_query; for cache use redis_get, redis_scan, and redis_info; for search use es_search and es_health.
-7. For symptoms like backlog or delay, use rabbit_queues, kafka_lag, and kafka_peek.
+7. For symptoms like backlog or delay, use rabbit_queues, kafka_lag, and kafka_peek. For Nacos configuration or service-discovery problems, use nacos_configs/nacos_config and nacos_services/nacos_instances within the target scope.
 8. Conclusions must state the environment, time window, target, and evidence (specific entries); explain it when results were truncated.
 9. If the evidence is insufficient, state exactly what is missing; do not guess or fabricate line numbers or values.
 10. Stay read-only throughout; never attempt a write operation."""

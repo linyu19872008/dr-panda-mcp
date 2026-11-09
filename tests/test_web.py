@@ -163,6 +163,28 @@ async def test_cls_rejects_friendly_topic_names(runtime: Runtime) -> None:
     assert await runtime.store.get("cls-bad-topic") is None
 
 
+async def test_create_nacos_target(runtime: Runtime) -> None:
+    payload = {
+        "type": "nacos",
+        "name": "nacos-target",
+        "enabled": "on",
+        "base_url": "http://127.0.0.1:8848",
+        "allowed_namespaces": "public",
+        "allowed_groups": "DEFAULT_GROUP",
+        "allowed_data_ids": "demo.yaml",
+        "allowed_services": "demo",
+        **COMMON,
+    }
+    async with _client(runtime) as client:
+        response = await client.post("/targets", data=payload)
+
+    assert response.status_code == 303
+    target = await runtime.store.get("nacos-target")
+    assert target is not None
+    assert target.type == "nacos"
+    assert target.options["allowed_data_ids"] == ["demo.yaml"]
+
+
 async def test_new_form_and_unknown_type(runtime: Runtime) -> None:
     async with _client(runtime) as client:
         form = await client.get("/targets/new?type=mysql")

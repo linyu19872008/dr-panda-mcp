@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261108e"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=1.5.0"></a>
   <a href="https://github.com/linyu19872008/dr-panda-mcp/blob/main/LICENSE"><img alt="License: MIT" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -114,7 +114,7 @@ Health check:
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.4.0","db":"ok"}
+# {"ok":true,"version":"1.5.0","db":"ok"}
 ```
 
 ### Optional dependencies
@@ -151,7 +151,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-It also supports PyPI installation (`--method pypi --version 1.4.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
+It also supports PyPI installation (`--method pypi --version 1.5.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
 
 ---
 
@@ -241,6 +241,7 @@ Tool calls only accept `environment` and `target` names — never hosts, account
 | `cls` | `cls_search`, `cls_context` |
 | `rabbitmq` | `rabbit_queues`, `rabbit_queue` |
 | `kafka` | `kafka_lag`, `kafka_offsets`, `kafka_peek` |
+| `nacos` | `nacos_configs`, `nacos_config`, `nacos_services`, `nacos_instances` |
 | global | `systems_status` |
 
 There is also an `investigate_error` prompt that organizes a troubleshooting path starting from an error symptom.
@@ -254,7 +255,8 @@ Target scope can only narrow the readable boundary:
 - GitLab: projects / branches;
 - RabbitMQ: vhosts / queues;
 - Kafka: topics / partitions;
-- CLS: log topics and time range.
+- CLS: log topics and time range;
+- Nacos: namespaces, groups, dataIds and services.
 
 Target names allow lowercase letters, digits and hyphens only, and are immutable. Secrets are stored encrypted and never echoed in lists.
 
@@ -264,7 +266,7 @@ Target names allow lowercase letters, digits and hyphens only, and are immutable
 
 ### Absolutely read-only
 
-- Every tool across the eight components (including the web console's connection test) is read-only;
+- Every tool across the registered components (including the web console's connection test) is read-only;
 - accounts with write permissions are never used for writes;
 - beyond the read-only whitelist, absolute dangerous rules reject:
   - admin/DDL/change commands;

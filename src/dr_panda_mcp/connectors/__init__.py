@@ -1,4 +1,4 @@
-"""八类排查组件的连接器注册表。"""
+"""九类排查组件的连接器注册表。"""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from dr_panda_mcp.connectors import (
     rabbit,
     redis,
 )
+from dr_panda_mcp.connectors import nacos as nacos_connector
 from dr_panda_mcp.connectors.base import Connector
 
 CONNECTORS: dict[str, Connector] = {
@@ -27,6 +28,7 @@ CONNECTORS: dict[str, Connector] = {
         rabbit.connector,
         kafka.connector,
         cls_connector.connector,
+        nacos_connector.connector,
     )
 }
 

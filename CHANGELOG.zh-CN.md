@@ -6,6 +6,16 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-09
+
+### 新增
+
+- 新增只读 `nacos` 目标类型：通过 Nacos OpenAPI 查询配置元数据/内容、服务列表和实例发现。
+- 授权范围：`allowed_namespaces`、`allowed_groups`、`allowed_data_ids`、`allowed_services`；dataId/服务范围为空时拒绝读取。
+- 支持 Nacos username/password 登录、accessToken 缓存、TLS CA 和探活。
+- `systems_status`、网页表单和 MCP 指令同步暴露 Nacos scope。
+- 新增 Docker Nacos 2.2.3 真实联调记录和 E2E 清单项。
+
 ## [1.4.0] - 2026-11-08
 
 ### 新增

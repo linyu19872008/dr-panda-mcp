@@ -12,6 +12,15 @@
 - [ ] `cls_context` 用 search 返回的 `package_id` / `btime` / `package_log_id` 能读到前后文
 - [ ] 宽窗（>2h）+ `sort=desc` 时 notes 含 newest-first 提示
 
+## Nacos
+
+- [ ] 探活通过（配置列表读取验证认证与 namespace/group）
+- [ ] `nacos_configs` 只返回 `allowed_data_ids`
+- [ ] `nacos_config` 读取内容正确
+- [ ] `nacos_services` 只返回 `allowed_services`
+- [ ] `nacos_instances` 返回健康、端口、集群和 metadata
+- [ ] 未授权 namespace/group/dataId/service → `SCOPE_DENIED`
+
 ## Kafka
 
 - [ ] 探活通过

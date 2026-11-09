@@ -74,6 +74,12 @@ _SCOPE_FIELDS: dict[str, tuple[tuple[str, str], ...]] = {
     "rabbitmq": (("allowed_vhosts", "允许的 vhost"),),
     "kafka": (("allowed_topics", "允许的 topic"),),
     "cls": (("allowed_topics", "允许的日志主题"),),
+    "nacos": (
+        ("allowed_namespaces", "允许的命名空间"),
+        ("allowed_groups", "允许的 group"),
+        ("allowed_data_ids", "允许的 dataId"),
+        ("allowed_services", "允许的服务"),
+    ),
 }
 
 

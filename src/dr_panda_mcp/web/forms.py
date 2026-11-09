@@ -285,6 +285,46 @@ TYPE_SPECS: dict[str, TypeSpec] = {
         ),
         "只查看堆积和有限消息，不加入消费组。",
     ),
+    "nacos": TypeSpec(
+        "nacos",
+        "Nacos",
+        (
+            Field(
+                "base_url",
+                "Nacos 地址",
+                "text",
+                required=True,
+                help="例如 http://nacos-host:8848；代码会自动补 /nacos。",
+            ),
+            Field("username", "用户名（可选）", "text"),
+            Field(
+                "allowed_namespaces",
+                "允许的命名空间（一行一个，public=默认）",
+                "list",
+                required=True,
+            ),
+            Field("allowed_groups", "允许的 group（一行一个）", "list", required=True),
+            Field(
+                "allowed_data_ids",
+                "允许的 dataId（一行一个，空=拒绝配置读取）",
+                "list",
+            ),
+            Field(
+                "allowed_services",
+                "允许的服务名（一行一个，空=拒绝服务读取）",
+                "list",
+            ),
+            Field("verify_tls", "校验 TLS", "bool", default=True),
+            Field(
+                "ca_pem",
+                "CA 证书 PEM（可选，私有 CA 时填写）",
+                "pem",
+                help="配置后必须保持 TLS 校验开启。",
+            ),
+        ),
+        (SecretField("password", "密码（配置用户名时必填）"),),
+        "只读取配置与服务；配置内容可能包含敏感值。",
+    ),
     "cls": TypeSpec(
         "cls",
         "CLS",
@@ -534,6 +574,22 @@ def _cross_validate(
                 "每行须为「日志集ID/日志主题ID」UUID（控制台复制），不能使用主题名称。"
             )
 
+
+    if spec.type == "nacos":
+        namespaces = options.get("allowed_namespaces") or []
+        groups = options.get("allowed_groups") or []
+        if not namespaces:
+            errors["allowed_namespaces"] = "至少填写一个允许的命名空间"
+        if not groups:
+            errors["allowed_groups"] = "至少填写一个允许的 group"
+        username = str(options.get("username") or "").strip()
+        password = _secret_present(existing, secrets_set, secrets_clear, "password")
+        if username and not password:
+            errors["secret_password"] = "配置用户名时必须填写密码"
+        if password and not username:
+            errors["username"] = "配置密码时必须填写用户名"
+        if options.get("ca_pem") and not options.get("verify_tls"):
+            errors["verify_tls"] = "配置 CA 证书时必须保持 TLS 校验开启"
 
 def _infer_mongo_auth_mode(target: Target) -> str:
     if target.secret.get("uri") or "uri" in target.secret_fields:

@@ -719,5 +719,19 @@
   "请求已过期": "Request expired",
   "页面已过期，请刷新后重试": "This page has expired. Refresh and try again.",
   "客户端安装完成，请重新测试连接": "Client installed. Test the connection again.",
-  "例如 ap-shanghai；腾讯云地域通常以 ap- 开头。": "For example ap-shanghai. Tencent Cloud regions usually start with ap-."
+  "例如 ap-shanghai；腾讯云地域通常以 ap- 开头。": "For example ap-shanghai. Tencent Cloud regions usually start with ap-.",
+  "Nacos 地址": "Nacos address",
+  "例如 http://nacos-host:8848；代码会自动补 /nacos。": "For example http://nacos-host:8848; /nacos is appended automatically.",
+  "用户名（可选）": "Username (optional)",
+  "密码（配置用户名时必填）": "Password (required when a username is set)",
+  "允许的命名空间（一行一个，public=默认）": "Allowed namespaces (one per line; public = default)",
+  "允许的 group（一行一个）": "Allowed groups (one per line)",
+  "允许的 dataId（一行一个，空=拒绝配置读取）": "Allowed dataIds (one per line; empty = no config reads)",
+  "允许的服务名（一行一个，空=拒绝服务读取）": "Allowed services (one per line; empty = no service reads)",
+  "只读取配置与服务；配置内容可能包含敏感值。": "Read-only configs and discovery; config content may contain sensitive values.",
+  "配置后必须保持 TLS 校验开启。": "TLS verification must stay enabled when a CA certificate is configured.",
+  "至少填写一个允许的命名空间": "Enter at least one allowed namespace",
+  "至少填写一个允许的 group": "Enter at least one allowed group",
+  "配置用户名时必须填写密码": "Password is required when a username is configured",
+  "配置密码时必须填写用户名": "Username is required when a password is configured"
 }

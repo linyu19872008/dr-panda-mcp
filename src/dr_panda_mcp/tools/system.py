@@ -184,6 +184,7 @@ _SCOPE_FIELDS: dict[str, tuple[str, ...]] = {
     "kafka": ("allowed_topics",),
     "cls": ("allowed_topics",),
     "gitlab": ("allowed_projects",),
+    "nacos": ("allowed_namespaces", "allowed_groups", "allowed_data_ids", "allowed_services"),
 }
 
 

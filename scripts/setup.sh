@@ -12,7 +12,7 @@
 # Examples:
 #   ./scripts/setup.sh check
 #   ./scripts/setup.sh install --method source --extras mysql,redis
-#   ./scripts/setup.sh install --method pypi --version 1.4.0
+#   ./scripts/setup.sh install --method pypi --version 1.5.0
 #   sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 #   ./scripts/setup.sh start
 #
@@ -27,7 +27,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 REPO_URL="${DR_PANDA_REPO_URL:-https://github.com/linyu19872008/dr-panda-mcp.git}"
-DEFAULT_VERSION="${DR_PANDA_VERSION:-1.4.0}"
+DEFAULT_VERSION="${DR_PANDA_VERSION:-1.5.0}"
 VERSION=""
 DEFAULT_USER="${DR_PANDA_SERVICE_USER:-drpanda}"
 DEFAULT_SERVICE_NAME="${DR_PANDA_SERVICE_NAME:-dr-panda-mcp}"
@@ -62,7 +62,7 @@ Options:
   --dir PATH              Application directory (default: current repo for source,
                           /opt/dr-panda-mcp for pypi/service)
   --method source|pypi    Installation method (install/upgrade)
-  --version VERSION       PyPI version (default 1.4.0)
+  --version VERSION       PyPI version (default 1.5.0)
   --python PYTHON         Python interpreter (default: auto; system >=3.11 first)
   --dev                   Install the dev dependency group (source only)
   --index-url URL         PyPI index (sets UV_DEFAULT_INDEX)

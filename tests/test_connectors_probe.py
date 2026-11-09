@@ -20,6 +20,7 @@ TARGET_TYPES = [
     "rabbitmq",
     "kafka",
     "cls",
+    "nacos",
 ]
 
 
@@ -81,7 +82,7 @@ async def test_mysql_probe_sets_session_limits(monkeypatch: pytest.MonkeyPatch) 
     assert connection.closed is True
 
 
-def test_connector_registry_covers_eight_types() -> None:
+def test_connector_registry_covers_nine_types() -> None:
     assert connector_names() == sorted(TARGET_TYPES)
 
 

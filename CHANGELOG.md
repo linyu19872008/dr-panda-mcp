@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-09
+
+### Added
+
+- New read-only `nacos` target type: config metadata/content, service list and instance discovery through Nacos OpenAPI.
+- Scope is expressed as `allowed_namespaces`, `allowed_groups`, `allowed_data_ids` and `allowed_services`; empty data/service scopes deny access.
+- Nacos username/password login, accessToken caching, TLS CA and health probe support.
+- `systems_status`, the web form and MCP instructions expose the Nacos scope.
+- Real Docker Nacos 2.2.3 integration verification and E2E checklist entries.
+
 ## [1.4.0] - 2026-11-08
 
 ### Added

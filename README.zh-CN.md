@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261108e"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=1.5.0"></a>
   <a href="LICENSE"><img alt="License: MIT" src="docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -112,7 +112,7 @@ http://127.0.0.1:8111/
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.4.0","db":"ok"}
+# {"ok":true,"version":"1.5.0","db":"ok"}
 ```
 
 ### 可选依赖
@@ -149,7 +149,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-也支持 PyPI 安装（`--method pypi --version 1.4.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
+也支持 PyPI 安装（`--method pypi --version 1.5.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
 
 ---
 
@@ -239,6 +239,7 @@ mcp__drpanda__systems_status
 | `cls` | `cls_search`、`cls_context` |
 | `rabbitmq` | `rabbit_queues`、`rabbit_queue` |
 | `kafka` | `kafka_lag`、`kafka_offsets`、`kafka_peek` |
+| `nacos` | `nacos_configs`、`nacos_config`、`nacos_services`、`nacos_instances` |
 | 全局 | `systems_status` |
 
 另有 `investigate_error` prompt，用于从错误现象开始组织排查路径。
@@ -252,7 +253,8 @@ mcp__drpanda__systems_status
 - GitLab：项目 / 分支；
 - RabbitMQ：vhost / queue；
 - Kafka：topic / partition；
-- CLS：日志主题与时间范围。
+- CLS：日志主题与时间范围；
+- Nacos：命名空间、group、dataId 与服务。
 
 目标名称只允许小写字母、数字和连字符，创建后不可修改。密钥只存密文，列表不回显。
 
@@ -262,7 +264,7 @@ mcp__drpanda__systems_status
 
 ### 绝对只读
 
-- 八类组件的所有工具（包括网页“测试连接”）只读；
+- 各已注册组件的所有工具（包括网页“测试连接”）只读；
 - 账号即使有写权限也不会被使用；
 - 只读白名单之外还有绝对危险规则：
   - 管理/变更类命令；
@@ -415,7 +417,7 @@ src/dr_panda_mcp/
   server.py           FastMCP、/mcp 与网页装配
   runtime.py          引擎、迁移、密钥、ConfigStore
   settings.py         系统配置默认值/范围/分组
-  connectors/         八类上游连接器
+  connectors/         上游组件连接器
   guards/             只读白名单与危险命令规则
   tools/              MCP 工具实现与审计
   prompts.py          investigate_error
