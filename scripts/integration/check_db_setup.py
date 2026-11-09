@@ -149,7 +149,7 @@ async def run_setup(target: Target) -> None:
                         text("SELECT COUNT(*) FROM users WHERE username = 'admin'")
                     )
                 ).scalar_one()
-            assert version == "0013_capacity_settings", version
+            assert version == "0014_target_operator_notes", version
             assert environment == "Default", environment
             assert admin_count == 1, admin_count
             # Ensure migrations are idempotent on an already-migrated database.
