@@ -15,7 +15,7 @@
 新增：
 
 ```text
-targets.operator_notes TEXT NOT NULL DEFAULT ''
+targets.operator_notes VARCHAR(512) NOT NULL DEFAULT ''
 ```
 
 迁移 `0014_target_operator_notes`：
