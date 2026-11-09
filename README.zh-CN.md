@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261109b"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=1.6.0"></a>
   <a href="LICENSE"><img alt="License: MIT" src="docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -112,7 +112,7 @@ http://127.0.0.1:8111/
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.5.1","db":"ok"}
+# {"ok":true,"version":"1.6.0","db":"ok"}
 ```
 
 ### 可选依赖
@@ -149,7 +149,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-也支持 PyPI 安装（`--method pypi --version 1.5.1`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
+也支持 PyPI 安装（`--method pypi --version 1.6.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
 
 ---
 
@@ -254,7 +254,7 @@ mcp__drpanda__systems_status
 - RabbitMQ：vhost / queue；
 - Kafka：topic / partition；
 - CLS：日志主题与时间范围；
-- Nacos：命名空间、group、dataId 与服务。 当前连接器面向 Nacos 1.x/2.x 的 v1 OpenAPI，尚不支持 Nacos 3.x。
+- Nacos：命名空间、group、dataId 与服务。 Nacos 1.x/2.x 使用 v1 OpenAPI，Nacos 3.x 使用 v3 client API，版本自动探测。
 
 目标名称只允许小写字母、数字和连字符，创建后不可修改。密钥只存密文，列表不回显。
 

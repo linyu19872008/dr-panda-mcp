@@ -6,6 +6,15 @@
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-09
+
+### 新增
+
+- 通过 v3 client 适配层支持 Nacos 3.x；v1/v3 端点自动选择，也可用 `api_version` 指定。
+- 支持 v3 配置读取、基于 scope 的配置列表、基于 scope 的服务列表和 v3 实例发现。
+- 新增 `api_version`（`auto` / `v1` / `v3`）目标选项。
+- 新增 Nacos 3.0.2 Docker 验证与 Nacos 2.2.3 回归。
+
 ## [1.5.1] - 2026-11-09
 
 ### 修复

@@ -733,5 +733,7 @@
   "至少填写一个允许的命名空间": "Enter at least one allowed namespace",
   "至少填写一个允许的 group": "Enter at least one allowed group",
   "配置用户名时必须填写密码": "Password is required when a username is configured",
-  "配置密码时必须填写用户名": "Username is required when a password is configured"
+  "配置密码时必须填写用户名": "Username is required when a password is configured",
+  "Nacos API 版本": "Nacos API version",
+  "auto=自动探测；v1=1.x/2.x OpenAPI；v3=3.x client API。": "auto = detect; v1 = 1.x/2.x OpenAPI; v3 = 3.x client API."
 }

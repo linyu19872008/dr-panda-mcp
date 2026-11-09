@@ -14,7 +14,11 @@
 
 ## Nacos
 
-- [ ] 探活通过（配置列表读取验证认证与 namespace/group）
+- [ ] 探活通过（v1 配置列表或 v3 登录/配置读取验证认证与 namespace/group）
+- [ ] `api_version=auto` 对 2.2.3 识别为 v1、对 3.0.2 识别为 v3
+- [ ] Nacos 3.x `nacos_config` 通过 v3 client API 读取内容
+- [ ] Nacos 3.x `nacos_configs` 只返回 `allowed_data_ids` 内的 dataId
+- [ ] Nacos 3.x `nacos_services` 只返回 `allowed_services`
 - [ ] `nacos_configs` 只返回 `allowed_data_ids`
 - [ ] `nacos_config` 读取内容正确
 - [ ] `nacos_services` 只返回 `allowed_services`

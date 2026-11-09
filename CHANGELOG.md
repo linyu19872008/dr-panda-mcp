@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-09
+
+### Added
+
+- Nacos 3.x support through a v3 client adapter; v1 and v3 endpoints are selected automatically or via `api_version`.
+- v3 config reads, scope-derived config listing, scope-derived service listing and v3 instance discovery.
+- `api_version` (`auto` / `v1` / `v3`) target option.
+- Nacos 3.0.2 Docker verification and Nacos 2.2.3 regression coverage.
+
 ## [1.5.1] - 2026-11-09
 
 ### Fixed

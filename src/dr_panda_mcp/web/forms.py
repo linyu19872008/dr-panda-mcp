@@ -298,6 +298,14 @@ TYPE_SPECS: dict[str, TypeSpec] = {
             ),
             Field("username", "用户名（可选）", "text"),
             Field(
+                "api_version",
+                "Nacos API 版本",
+                "select",
+                default="auto",
+                choices=("auto", "v1", "v3"),
+                help="auto=自动探测；v1=1.x/2.x OpenAPI；v3=3.x client API。",
+            ),
+            Field(
                 "allowed_namespaces",
                 "允许的命名空间（一行一个，public=默认）",
                 "list",

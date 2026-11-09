@@ -11,9 +11,10 @@ from tests.fakes import make_target
 
 
 def _target(*, data_ids: list[str] | None = None, services: list[str] | None = None,
-            username: str = "") -> Any:
+            username: str = "", api_version: str = "auto") -> Any:
     options: dict[str, Any] = {
         "base_url": "http://nacos.test:8848",
+        "api_version": api_version,
         "allowed_namespaces": ["public"],
         "allowed_groups": ["DEFAULT_GROUP"],
         "allowed_data_ids": data_ids if data_ids is not None else ["demo.yaml"],
@@ -61,8 +62,12 @@ async def test_nacos_ping_and_config_list() -> None:
     await client.ping()
     rows, total = await client.configs(namespace="", group="", page=1, page_size=10)
 
-    assert requests[0].url.params["group"] == "DEFAULT_GROUP"
-    assert requests[0].url.params["tenant"] == ""
+    assert requests[0].url.path.endswith("/v1/console/health/liveness")
+    config_request = next(
+        request for request in requests if request.url.path.endswith("/v1/cs/configs")
+    )
+    assert config_request.url.params["group"] == "DEFAULT_GROUP"
+    assert config_request.url.params["tenant"] == ""
     assert total == 2
     assert rows == [
         {
@@ -140,8 +145,11 @@ async def test_nacos_login_token_is_sent() -> None:
     await client.ping()
     await client.configs(namespace="", group="", page=1, page_size=10)
 
-    assert requests[0].url.path.endswith("/v1/auth/login")
-    assert any(request.url.params.get("accessToken") == "tok-1" for request in requests[1:])
+    login_request = next(
+        request for request in requests if request.url.path.endswith("/v1/auth/login")
+    )
+    assert login_request.url.path.endswith("/v1/auth/login")
+    assert any(request.url.params.get("accessToken") == "tok-1" for request in requests)
 
 
 async def test_nacos_short_token_ttl_does_not_exceed_server_expiry() -> None:
@@ -159,3 +167,54 @@ async def test_nacos_short_token_ttl_does_not_exceed_server_expiry() -> None:
 
     remaining = client._token_expiry - time.monotonic()
     assert 0 < remaining <= 5
+
+
+async def test_nacos_v3_detects_and_uses_client_api() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        path = request.url.path
+        if path.endswith("/v1/console/health/liveness"):
+            return httpx.Response(410, json={"message": "use v3"})
+        if path.endswith("/v3/client/cs/config"):
+            return httpx.Response(
+                200,
+                json={"code": 0, "data": {"content": "hello-v3", "contentType": "yaml"}},
+            )
+        if path.endswith("/v3/client/ns/instance/list"):
+            return httpx.Response(
+                200,
+                json={
+                    "code": 0,
+                    "data": [
+                        {
+                            "ip": "10.0.0.3",
+                            "port": 8081,
+                            "clusterName": "DEFAULT",
+                            "healthy": True,
+                            "enabled": True,
+                        }
+                    ],
+                },
+            )
+        return httpx.Response(404)
+
+    client = _client(_target(), handler)
+    await client.ping()
+    rows, total = await client.configs(namespace="", group="", page=1, page_size=10)
+    content = await client.config(namespace="", group="", data_id="demo.yaml")
+    services, service_total = await client.services(namespace="", group="", page=1, page_size=10)
+    instances = await client.instances(namespace="", group="", service="demo")
+
+    assert client._version == "v3"
+    assert rows[0]["data_id"] == "demo.yaml"
+    assert total == 1
+    assert content == "hello-v3"
+    assert services[0]["service"] == "demo"
+    assert service_total == 1
+    assert instances[0]["ip"] == "10.0.0.3"
+    assert all(
+        not request.url.path.startswith("/v3/admin")
+        for request in requests
+    )

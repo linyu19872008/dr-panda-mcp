@@ -68,7 +68,7 @@ expiry = now + max(1, ttl - margin)
 - v3 登录：`POST /nacos/v3/auth/user/login` 成功；
 - 原 v1 配置 API 返回 `410 Gone`，提示改用 `/v3/...`；
 - v3 admin/console API 的路径和响应包络与 v1 不同；
-- 当前 DrPanda Nacos 连接器基于 v1 OpenAPI，**不支持 Nacos 3.x 默认模式**。
+- 1.5.1 的 DrPanda Nacos 连接器基于 v1 OpenAPI，**不支持 Nacos 3.x 默认模式**；1.6.0 已新增 v3 适配，见 [nacos-3-1.6.0-01.md](nacos-3-1.6.0-01.md)。
 
 结论：当前支持 Nacos 1.x / 2.x（v1 OpenAPI）；Nacos 3.x 需要单独适配 v3 API，不能直接宣称兼容。
 

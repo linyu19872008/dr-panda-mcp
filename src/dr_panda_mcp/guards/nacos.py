@@ -9,6 +9,8 @@ _ALLOWED_PREFIXES = (
     "/v1/ns/service/list",
     "/v1/ns/instance/list",
     "/v1/console/health/liveness",
+    "/v3/client/cs/config",
+    "/v3/client/ns/instance/list",
 )
 
 
