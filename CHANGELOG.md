@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-09
+
+### Fixed
+
+- Nacos accessToken caching no longer exceeds short server TTLs; the refresh margin is capped below the issued token lifetime.
+
+### Verified
+
+- Nacos 2.2.3 auth: default and custom users, namespace/group ACL, wrong-password classification.
+- Nacos 1.4.2 auth.
+- TLS termination + Nacos auth.
+- Nacos 3.0.2 v3 auth/API differences; v3 is documented as unsupported by the current v1 connector.
+
 ## [1.5.0] - 2026-11-09
 
 ### Added

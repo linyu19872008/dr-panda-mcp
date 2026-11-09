@@ -131,9 +131,13 @@ class _NacosClient:
         token = str(payload.get("accessToken") or "").strip()
         if not token:
             raise errors.UpstreamAuthError("nacos login returned no accessToken")
-        ttl = int(payload.get("tokenTtl") or payload.get("tokenTTL") or _TOKEN_TTL_FALLBACK)
+        ttl = max(1, int(payload.get("tokenTtl") or payload.get("tokenTTL") or _TOKEN_TTL_FALLBACK))
+        # Refresh shortly before server expiry without ever caching past it.
+        # For the normal 18000s TTL this leaves 30s; very short TTLs (tests
+        # or hardened deployments) still get an early refresh.
+        margin = min(30, max(1, ttl // 10))
         self._access_token = token
-        self._token_expiry = time.monotonic() + max(30, ttl - 30)
+        self._token_expiry = time.monotonic() + max(1, ttl - margin)
         return token
 
     async def _token(self, client: httpx.AsyncClient) -> str:

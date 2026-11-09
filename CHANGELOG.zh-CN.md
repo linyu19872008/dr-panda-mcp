@@ -6,6 +6,19 @@
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-09
+
+### 修复
+
+- Nacos accessToken 缓存不再超过服务端短 TTL；刷新余量不会超过 token 实际寿命。
+
+### 验证
+
+- Nacos 2.2.3 认证：默认用户、自定义用户、namespace/group ACL、错误密码分类。
+- Nacos 1.4.2 认证。
+- TLS 终止 + Nacos 认证。
+- Nacos 3.0.2 的 v3 认证/API 差异；当前 v1 连接器明确不支持 v3。
+
 ## [1.5.0] - 2026-11-09
 
 ### 新增

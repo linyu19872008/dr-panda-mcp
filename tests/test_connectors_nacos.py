@@ -142,3 +142,20 @@ async def test_nacos_login_token_is_sent() -> None:
 
     assert requests[0].url.path.endswith("/v1/auth/login")
     assert any(request.url.params.get("accessToken") == "tok-1" for request in requests[1:])
+
+
+async def test_nacos_short_token_ttl_does_not_exceed_server_expiry() -> None:
+    import time
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/v1/auth/login"):
+            return httpx.Response(200, json={"accessToken": "short", "tokenTtl": 5})
+        return httpx.Response(
+            200, json={"totalCount": 0, "pageItems": []}
+        )
+
+    client = _client(_target(username="nacos"), handler)
+    await client.ping()
+
+    remaining = client._token_expiry - time.monotonic()
+    assert 0 < remaining <= 5
