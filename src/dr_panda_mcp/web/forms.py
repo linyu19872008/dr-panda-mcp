@@ -333,6 +333,49 @@ TYPE_SPECS: dict[str, TypeSpec] = {
         (SecretField("password", "密码（配置用户名时必填）"),),
         "只读取配置与服务；配置内容可能包含敏感值。",
     ),
+    "jenkins": TypeSpec(
+        "jenkins",
+        "Jenkins",
+        (
+            Field(
+                "base_url",
+                "Jenkins 地址",
+                "text",
+                required=True,
+                help="例如 https://jenkins.example.com。",
+            ),
+            Field("username", "用户名（可选）", "text"),
+            Field(
+                "allowed_jobs",
+                "允许的 Job（一行一个完整名称）",
+                "list",
+                required=True,
+                help="例如 team-a/service-build；支持多级文件夹路径。",
+            ),
+            Field(
+                "allowed_nodes",
+                "允许的节点（一行一个，空=拒绝节点读取）",
+                "list",
+            ),
+            Field(
+                "allow_console",
+                "允许读取构建日志",
+                "bool",
+                default=False,
+                help="日志可能包含敏感信息，默认关闭。",
+            ),
+            Field("max_builds", "构建列表条数上限", "int", default=20),
+            Field("verify_tls", "校验 TLS", "bool", default=True),
+            Field(
+                "ca_pem",
+                "CA 证书 PEM（可选，私有 CA 时填写）",
+                "pem",
+                help="配置后必须保持 TLS 校验开启。",
+            ),
+        ),
+        (SecretField("api_token", "API Token（配置用户名时必填）"),),
+        "只读取 Job、构建、节点和队列；不会触发构建或修改配置。",
+    ),
     "cls": TypeSpec(
         "cls",
         "CLS",
@@ -583,6 +626,22 @@ def _cross_validate(
             )
 
 
+    if spec.type == "jenkins":
+        jobs = options.get("allowed_jobs") or []
+        if not jobs:
+            errors["allowed_jobs"] = "至少填写一个允许的 Job"
+        username = str(options.get("username") or "").strip()
+        token = _secret_present(existing, secrets_set, secrets_clear, "api_token")
+        if username and not token:
+            errors["secret_api_token"] = "配置用户名时必须填写 API Token"
+        if token and not username:
+            errors["username"] = "配置 API Token 时必须填写用户名"
+        builds = options.get("max_builds")
+        if isinstance(builds, int) and not 1 <= builds <= 100:
+            errors["max_builds"] = "构建条数必须在 1–100"
+        if options.get("ca_pem") and not options.get("verify_tls"):
+            errors["verify_tls"] = "配置 CA 证书时必须保持 TLS 校验开启"
+
     if spec.type == "nacos":
         namespaces = options.get("allowed_namespaces") or []
         groups = options.get("allowed_groups") or []
@@ -732,6 +791,7 @@ ADVANCED_OPTION_KEYS = frozenset(
         "tls",
         "verify_tls",
         "ca_pem",
+        "allow_console",
         "allow_processlist",
         "default_window_minutes",
         "max_window_minutes",

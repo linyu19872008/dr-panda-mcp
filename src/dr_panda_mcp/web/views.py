@@ -80,6 +80,10 @@ _SCOPE_FIELDS: dict[str, tuple[tuple[str, str], ...]] = {
         ("allowed_data_ids", "允许的 dataId"),
         ("allowed_services", "允许的服务"),
     ),
+    "jenkins": (
+        ("allowed_jobs", "允许的 Job"),
+        ("allowed_nodes", "允许的节点"),
+    ),
 }
 
 

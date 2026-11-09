@@ -735,5 +735,20 @@
   "配置用户名时必须填写密码": "Password is required when a username is configured",
   "配置密码时必须填写用户名": "Username is required when a password is configured",
   "Nacos API 版本": "Nacos API version",
-  "auto=自动探测；v1=1.x/2.x OpenAPI；v3=3.x client API。": "auto = detect; v1 = 1.x/2.x OpenAPI; v3 = 3.x client API."
+  "auto=自动探测；v1=1.x/2.x OpenAPI；v3=3.x client API。": "auto = detect; v1 = 1.x/2.x OpenAPI; v3 = 3.x client API.",
+  "Jenkins": "Jenkins",
+  "Jenkins 地址": "Jenkins URL",
+  "例如 https://jenkins.example.com。": "For example https://jenkins.example.com.",
+  "API Token（配置用户名时必填）": "API token (required when a username is set)",
+  "允许的 Job（一行一个完整名称）": "Allowed jobs (one full name per line)",
+  "例如 team-a/service-build；支持多级文件夹路径。": "For example team-a/service-build; nested folder paths are supported.",
+  "允许的节点（一行一个，空=拒绝节点读取）": "Allowed nodes (one per line; empty = no node reads)",
+  "允许读取构建日志": "Allow build console logs",
+  "日志可能包含敏感信息，默认关闭。": "Logs may contain sensitive values; disabled by default.",
+  "构建列表条数上限": "Build list limit",
+  "只读取 Job、构建、节点和队列；不会触发构建或修改配置。": "Read-only jobs, builds, nodes and queue; builds are never triggered and configuration is never changed.",
+  "至少填写一个允许的 Job": "Enter at least one allowed job",
+  "配置用户名时必须填写 API Token": "API token is required when a username is configured",
+  "配置 API Token 时必须填写用户名": "Username is required when an API token is configured",
+  "构建条数必须在 1–100": "Build limit must be between 1 and 100"
 }

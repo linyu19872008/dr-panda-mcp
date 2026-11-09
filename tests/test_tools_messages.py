@@ -177,7 +177,7 @@ async def test_message_tools_listed(runtime: Runtime) -> None:
         tools = await client.list_tools()
 
     names = {tool.name for tool in tools}
-    assert len(names) == 32
+    assert len(names) == 39
     assert MESSAGE_TOOLS <= names
     for tool in tools:
         if tool.name in MESSAGE_TOOLS:

@@ -14,6 +14,7 @@ from dr_panda_mcp.connectors import (
     rabbit,
     redis,
 )
+from dr_panda_mcp.connectors import jenkins as jenkins_connector
 from dr_panda_mcp.connectors import nacos as nacos_connector
 from dr_panda_mcp.connectors.base import Connector
 
@@ -29,6 +30,7 @@ CONNECTORS: dict[str, Connector] = {
         kafka.connector,
         cls_connector.connector,
         nacos_connector.connector,
+        jenkins_connector.connector,
     )
 }
 

@@ -12,6 +12,17 @@
 - [ ] `cls_context` 用 search 返回的 `package_id` / `btime` / `package_log_id` 能读到前后文
 - [ ] 宽窗（>2h）+ `sort=desc` 时 notes 含 newest-first 提示
 
+## Jenkins
+
+- [ ] 认证探活通过（API Token 优先）
+- [ ] `jenkins_jobs` 只返回 `allowed_jobs`
+- [ ] `jenkins_job` 返回最近构建状态
+- [ ] `jenkins_builds` / `jenkins_build` 能读取构建结果和参数
+- [ ] `allow_console=true` 时 `jenkins_console` 截断读取日志；false 时返回 `SCOPE_DENIED`
+- [ ] `jenkins_nodes` 只返回 `allowed_nodes`
+- [ ] `jenkins_queue` 只显示授权 Job 的排队项
+- [ ] 越权 job/node → `SCOPE_DENIED`
+
 ## Nacos
 
 - [ ] 探活通过（v1 配置列表或 v3 登录/配置读取验证认证与 namespace/group）

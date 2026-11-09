@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Any, Protocol, runtime_checkable
 
 TARGET_TYPES = frozenset(
-    {"mysql", "mongo", "elasticsearch", "redis", "gitlab", "rabbitmq", "kafka", "cls", "nacos"}
+    {"mysql", "mongo", "elasticsearch", "redis", "gitlab", "rabbitmq", "kafka", "cls", "nacos", "jenkins"}
 )
 
 

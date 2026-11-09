@@ -6,6 +6,15 @@
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-09
+
+### 新增
+
+- 新增只读 `jenkins` 目标类型，通过 Jenkins REST API 接入。
+- 支持 Job、Job 详情、最近构建、构建详情、截断日志、节点和队列。
+- 支持 API Token、TLS CA、Job/节点精确 allowlist、可选日志访问和构建/日志大小限制。
+- 完成 Jenkins 2.541.3 真实 Docker 验证（Basic Auth、API Token、Job、构建、日志、节点、队列）。
+
 ## [1.6.0] - 2026-11-09
 
 ### 新增

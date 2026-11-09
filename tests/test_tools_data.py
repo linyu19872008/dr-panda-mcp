@@ -232,7 +232,7 @@ async def test_tool_list_has_28(runtime: Runtime) -> None:
         tools = await client.list_tools()
 
     names = {tool.name for tool in tools}
-    assert len(names) == 32
+    assert len(names) == 39
     assert DATA_TOOLS <= names
     for tool in tools:
         assert tool.annotations is not None and tool.annotations.read_only_hint is True

@@ -185,6 +185,31 @@ async def test_create_nacos_target(runtime: Runtime) -> None:
     assert target.options["allowed_data_ids"] == ["demo.yaml"]
 
 
+async def test_create_jenkins_target(runtime: Runtime) -> None:
+    payload = {
+        "type": "jenkins",
+        "name": "jenkins-target",
+        "enabled": "on",
+        "base_url": "https://jenkins.example.com",
+        "username": "admin",
+        "allowed_jobs": "team-a/service-build",
+        "allowed_nodes": "Built-In Node",
+        "allow_console": "on",
+        "max_builds": "20",
+        "secret_api_token": "token",
+        **COMMON,
+    }
+    async with _client(runtime) as client:
+        response = await client.post("/targets", data=payload)
+
+    assert response.status_code == 303
+    target = await runtime.store.get("jenkins-target")
+    assert target is not None
+    assert target.type == "jenkins"
+    assert target.options["allowed_jobs"] == ["team-a/service-build"]
+    assert target.options["allow_console"] is True
+
+
 async def test_new_form_and_unknown_type(runtime: Runtime) -> None:
     async with _client(runtime) as client:
         form = await client.get("/targets/new?type=mysql")

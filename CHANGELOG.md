@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-09
+
+### Added
+
+- New read-only `jenkins` target type using the Jenkins REST API.
+- Tools for jobs, job details, recent builds, build details, bounded console logs, nodes and queue.
+- API token authentication, TLS CA, exact job/node allowlists, optional console access and bounded build/log sizes.
+- Real Jenkins 2.541.3 Docker verification (Basic auth, API token, job, build, console, node, queue).
+
 ## [1.6.0] - 2026-11-09
 
 ### Added
