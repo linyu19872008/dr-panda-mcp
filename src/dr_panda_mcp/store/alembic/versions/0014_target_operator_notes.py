@@ -20,7 +20,7 @@ def upgrade() -> None:
     if "operator_notes" not in columns:
         op.add_column(
             "targets",
-            sa.Column("operator_notes", sa.Text(), nullable=False, server_default=""),
+            sa.Column("operator_notes", sa.String(512), nullable=False, server_default=""),
         )
 
 

@@ -90,7 +90,7 @@ class TargetRow(Base):
     last_test_ok: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     last_test_error: Mapped[str | None] = mapped_column(String(512), nullable=True)
     operator_notes: Mapped[str] = mapped_column(
-        Text, nullable=False, default="", server_default=""
+        String(512), nullable=False, default="", server_default=""
     )
 
 
