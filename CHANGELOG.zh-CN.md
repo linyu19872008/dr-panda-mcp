@@ -6,6 +6,18 @@
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-09
+
+### 新增
+
+- target 级 `operator_notes`（最多 512 字符），由 `systems_status` 和具体工具结果完整返回。
+- 明确为 advisory：不改变授权范围、只读规则或闸门判断。
+- 网页字段、长度校验和密钥填写警告；迁移新增 `targets.operator_notes`。
+
+### 验证
+
+- 覆盖 store 创建/读取/更新、长度限制、迁移、`systems_status` 和工具包络。
+
 ## [1.7.0] - 2026-11-09
 
 ### 新增

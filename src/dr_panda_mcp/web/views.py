@@ -55,6 +55,7 @@ class TargetView:
     environment_key: str = ""
     environment_title: str = ""
     environment_enabled: bool = True
+    operator_notes: str = ""
 
 
 @dataclass(frozen=True)
@@ -246,6 +247,7 @@ def to_view(target: Target) -> TargetView:
         environment_key=target.environment_key,
         environment_title=target.environment_title,
         environment_enabled=target.environment_enabled,
+        operator_notes=target.operator_notes,
     )
 
 

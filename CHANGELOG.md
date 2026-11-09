@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-09
+
+### Added
+
+- Per-target `operator_notes` (up to 512 characters), exposed in full by `systems_status` and target-specific tool results.
+- Advisory-only semantics: notes never change authorization scope, read-only rules, or guard decisions.
+- Web form field with length validation and secret-handling warning; migration adds `targets.operator_notes`.
+
+### Verified
+
+- Store create/get/update, bounded length validation, migration, `systems_status`, and tool envelope coverage.
+
 ## [1.7.0] - 2026-11-09
 
 ### Added

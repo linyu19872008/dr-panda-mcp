@@ -46,6 +46,11 @@ async def test_migrate_creates_tables_and_defaults(tmp_path: Path) -> None:
         "alembic_version",
     } <= tables
     with sqlite3.connect(tmp_path / "dr-panda.sqlite") as connection:
+        target_columns = {
+            row[1] for row in connection.execute("PRAGMA table_info(targets)")
+        }
+        assert "operator_notes" in target_columns
+    with sqlite3.connect(tmp_path / "dr-panda.sqlite") as connection:
         audit_columns = {
             row[1] for row in connection.execute("PRAGMA table_info(audit)")
         }

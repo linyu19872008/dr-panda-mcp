@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261109e"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=1.8.0"></a>
   <a href="LICENSE"><img alt="License: MIT" src="docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -112,7 +112,7 @@ http://127.0.0.1:8111/
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.7.0","db":"ok"}
+# {"ok":true,"version":"1.8.0","db":"ok"}
 ```
 
 ### 可选依赖
@@ -149,7 +149,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-也支持 PyPI 安装（`--method pypi --version 1.7.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
+也支持 PyPI 安装（`--method pypi --version 1.8.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
 
 ---
 
@@ -259,6 +259,8 @@ mcp__drpanda__systems_status
 - Jenkins：Job、节点和可选的构建日志。 Nacos 1.x/2.x 使用 v1 OpenAPI，Nacos 3.x 使用 v3 client API，版本自动探测。
 
 目标名称只允许小写字母、数字和连字符，创建后不可修改。密钥只存密文，列表不回显。
+
+每个目标可填写最多 512 个字符的 `operator_notes`（排查提示）。`systems_status` 和具体工具结果会完整返回该字段，作为 AI 的咨询性排查建议；它不会改变授权范围、只读规则或闸门判断。不要填写密码、Token 或私钥。
 
 ---
 

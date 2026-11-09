@@ -1322,6 +1322,7 @@ def _draft_target(draft, existing: Target | None) -> Target:
         last_test_at=existing.last_test_at if existing else None,
         last_test_ok=existing.last_test_ok if existing else None,
         last_test_error=existing.last_test_error if existing else None,
+        operator_notes=draft.operator_notes,
     )
 
 

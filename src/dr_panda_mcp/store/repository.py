@@ -67,8 +67,10 @@ def utc_now() -> datetime:
     return datetime.now(UTC)
 
 
-def _target_update_summary(environment_key: str, patch: SecretPatch) -> str:
+def _target_update_summary(environment_key: str, patch: SecretPatch, *, notes_changed: bool) -> str:
     parts = [f"env={environment_key}", "options"]
+    if notes_changed:
+        parts.append("operator_notes")
     secret_bits: list[str] = []
     if patch.set:
         secret_bits.append("set=" + ",".join(sorted(patch.set)))
@@ -256,6 +258,7 @@ class SqlConfigStore:
             last_test_at=None,
             last_test_ok=None,
             last_test_error=None,
+            operator_notes=draft.operator_notes,
         )
         try:
             async with self._session_factory() as session:
@@ -296,15 +299,19 @@ class SqlConfigStore:
                     envelope.update(
                         self._box.encrypt(row.name, draft.secret_patch.set, environment=env_row.key)
                     )
+                    notes_changed = (row.operator_notes or "") != draft.operator_notes
                     row.options_json = dict(draft.options)
                     row.secret_json = envelope
+                    row.operator_notes = draft.operator_notes
                     row.updated_at = utc_now()
                     session.add(
                         self._audit_row(
                             actor,
                             "target.update",
                             row.name,
-                            _target_update_summary(env_row.key, draft.secret_patch),
+                            _target_update_summary(
+                                env_row.key, draft.secret_patch, notes_changed=notes_changed
+                            ),
                             environment_key=env_row.key,
                         )
                     )
@@ -700,6 +707,7 @@ class SqlConfigStore:
             environment_key=env.key,
             environment_title=env.title,
             environment_enabled=env.enabled,
+            operator_notes=row.operator_notes or "",
         )
 
 
@@ -722,6 +730,9 @@ def _validated(draft: TargetDraft) -> TargetDraft:
     environment_key = (draft.environment_key or "").strip()
     if environment_key and not _NAME_RE.match(environment_key):
         raise InvalidTarget("调用标识只允许小写字母、数字与连字符，以字母或数字开头结尾，最长 64")
+    operator_notes = (draft.operator_notes or "").strip()
+    if len(operator_notes) > 512:
+        raise InvalidTarget("排查提示最长 512 个字符")
     return TargetDraft(
         name=name,
         type=draft.type,
@@ -729,6 +740,7 @@ def _validated(draft: TargetDraft) -> TargetDraft:
         options=dict(draft.options),
         secret_patch=draft.secret_patch,
         environment_key=environment_key,
+        operator_notes=operator_notes,
     )
 
 

@@ -114,6 +114,19 @@ async def test_systems_status_exposes_non_secret_target_scope(runtime: Runtime) 
             "anonymous",
         )
 
+    await runtime.store.create(
+        TargetDraft(
+            name="notes-a",
+            type="redis",
+            enabled=True,
+            options={"key_prefix": "notes:"},
+            secret_patch=SecretPatch(set={}),
+            environment_key="default",
+            operator_notes="生产缓存，默认先看最近 30 分钟。",
+        ),
+        "anonymous",
+    )
+
     server = create_server(runtime.config, runtime)
     async with Client(server) as client:
         result = await client.call_tool("systems_status", {"environment": "default"})
@@ -135,5 +148,6 @@ async def test_systems_status_exposes_non_secret_target_scope(runtime: Runtime) 
     assert rows["kafka-a"]["scope"] == {"allowed_topics": ["orders.created"]}
     assert rows["cls-a"]["scope"] == {"allowed_topics": ["logset/topic-a"]}
     assert rows["gitlab-a"]["scope"] == {"allowed_projects": ["group/app"]}
+    assert rows["notes-a"]["operator_notes"] == "生产缓存，默认先看最近 30 分钟。"
     assert any("logsetId/topicId" in note for note in payload["notes"])
     assert "secret" not in str(payload).lower()

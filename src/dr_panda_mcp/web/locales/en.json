@@ -750,5 +750,9 @@
   "至少填写一个允许的 Job": "Enter at least one allowed job",
   "配置用户名时必须填写 API Token": "API token is required when a username is configured",
   "配置 API Token 时必须填写用户名": "Username is required when an API token is configured",
-  "构建条数必须在 1–100": "Build limit must be between 1 and 100"
+  "构建条数必须在 1–100": "Build limit must be between 1 and 100",
+  "排查提示（AI 可见）": "Troubleshooting notes (visible to AI)",
+  "例如：生产主库，只读排障；默认看最近 30 分钟。": "Example: production primary; read-only troubleshooting; default to the last 30 minutes.",
+  "写给 AI 的排查建议，不会改变授权范围和只读规则。不要填写密码、Token 或私钥。最多 512 个字符。": "Guidance for the AI. It cannot change authorization scope or read-only rules. Do not include passwords, tokens or private keys. Maximum 512 characters.",
+  "排查提示不能超过 512 个字符": "Troubleshooting notes must not exceed 512 characters"
 }

@@ -253,6 +253,7 @@ def build_envelope(
     return {
         "target": target.name,
         "type": target.type,
+        "operator_notes": target.operator_notes,
         "summary": summary,
         "time_range": time_range,
         "returned": len(result_rows),

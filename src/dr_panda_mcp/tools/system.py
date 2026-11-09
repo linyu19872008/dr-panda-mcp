@@ -132,6 +132,7 @@ async def _targets(runtime: Runtime, key: str) -> dict[str, Any]:
             "name": target.name,
             "type": target.type,
             "enabled": target.enabled,
+            "operator_notes": target.operator_notes,
             "scope": _target_scope(target),
             "last_test_at": _iso(target.last_test_at),
             "last_test_ok": target.last_test_ok,

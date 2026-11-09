@@ -32,6 +32,7 @@ def _draft(
     set_secrets: dict[str, str] | None = None,
     clear: tuple[str, ...] = (),
     enabled: bool = True,
+    operator_notes: str = "",
 ) -> TargetDraft:
     return TargetDraft(
         name=name,
@@ -39,6 +40,7 @@ def _draft(
         enabled=enabled,
         options=options if options is not None else {"host": "127.0.0.1"},
         secret_patch=SecretPatch(set=set_secrets or {}, clear=frozenset(clear)),
+        operator_notes=operator_notes,
     )
 
 
@@ -500,3 +502,25 @@ async def test_audit_outcome_persisted_and_filterable(runtime: Runtime) -> None:
         "created",
         None,
     )
+
+
+async def test_operator_notes_roundtrip_and_update(runtime: Runtime) -> None:
+    created = await runtime.store.create(
+        _draft(operator_notes="生产主库，只读排障。"),
+        "anonymous",
+    )
+    assert created.operator_notes == "生产主库，只读排障。"
+
+    updated = await runtime.store.update(
+        created.id,
+        _draft(operator_notes="生产主库，默认看最近 30 分钟。"),
+        "anonymous",
+    )
+    assert updated.operator_notes == "生产主库，默认看最近 30 分钟。"
+    fetched = await runtime.store.get("order-mysql")
+    assert fetched is not None and fetched.operator_notes == updated.operator_notes
+
+
+async def test_operator_notes_are_bounded(runtime: Runtime) -> None:
+    with pytest.raises(InvalidTarget):
+        await runtime.store.create(_draft(operator_notes="x" * 513), "anonymous")

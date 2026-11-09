@@ -430,6 +430,7 @@ def initial_values(
     values: dict[str, str] = {
         "name": target.name if target else "",
         "enabled": "on" if (target is None or target.enabled) else "",
+        "operator_notes": target.operator_notes if target else "",
     }
     options = target.options if target else {}
     if spec.type == "mongo" and target is not None and "auth_mode" not in options:
@@ -460,6 +461,10 @@ def parse_form(
     name = existing.name if existing else _text(form, "name")
     values["name"] = name
     values["enabled"] = "on" if _checked(form, "enabled") else ""
+    operator_notes = _raw(form, "operator_notes").strip()
+    values["operator_notes"] = operator_notes
+    if len(operator_notes) > 512:
+        errors["operator_notes"] = "排查提示不能超过 512 个字符"
     if not existing and not name:
         errors["name"] = "名称不能为空"
     environment_key = _environment_key(form, existing, environments or [], errors)
@@ -512,6 +517,7 @@ def parse_form(
         options=options,
         secret_patch=SecretPatch(set=secrets_set, clear=frozenset(secrets_clear)),
         environment_key=environment_key,
+        operator_notes=operator_notes,
     )
     return draft, {}, values
 

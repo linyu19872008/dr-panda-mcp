@@ -115,6 +115,14 @@
         </label>
         <p class="field__hint">{{ t('停用后不能使用该目标，配置会保留。') }}</p>
       </div>
+      <div class="field{% if errors.get('operator_notes') %} field--invalid{% endif %}">
+        <label class="field__label" for="field-operator-notes">{{ t('排查提示（AI 可见）') }}</label>
+        <textarea class="input textarea" id="field-operator-notes" name="operator_notes" rows="4" maxlength="512"
+                  placeholder="{{ t('例如：生产主库，只读排障；默认看最近 30 分钟。') }}"
+                  {% if errors.get('operator_notes') %}aria-invalid="true" aria-describedby="err-operator_notes"{% endif %}>{{ values.get('operator_notes', '') }}</textarea>
+        <p class="field__hint">{{ t('写给 AI 的排查建议，不会改变授权范围和只读规则。不要填写密码、Token 或私钥。最多 512 个字符。') }}</p>
+        {% if errors.get('operator_notes') %}<p class="field__error" id="err-operator_notes" role="alert">{{ t(errors.get('operator_notes')) }}</p>{% endif %}
+      </div>
     </section>
 
     <section class="card form-section">

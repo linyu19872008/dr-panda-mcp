@@ -49,6 +49,7 @@ class Target:
     environment_key: str = ""
     environment_title: str = ""
     environment_enabled: bool = True
+    operator_notes: str = ""
 
 
 @dataclass(frozen=True)
@@ -72,6 +73,7 @@ class TargetDraft:
     options: dict[str, Any]
     secret_patch: SecretPatch = field(default_factory=SecretPatch)
     environment_key: str = ""
+    operator_notes: str = ""
 
 
 @dataclass(frozen=True)

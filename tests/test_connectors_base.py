@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 
 import httpx
 import pytest
@@ -11,7 +12,7 @@ from tests.fakes import make_target
 
 
 def test_build_envelope_has_eleven_keys() -> None:
-    target = make_target()
+    target = replace(make_target(), operator_notes="生产主库，只读排障。")
     envelope = base.build_envelope(
         target,
         summary="SELECT 1",
@@ -25,6 +26,7 @@ def test_build_envelope_has_eleven_keys() -> None:
     assert set(envelope) == {
         "target",
         "type",
+        "operator_notes",
         "summary",
         "time_range",
         "returned",
@@ -36,6 +38,7 @@ def test_build_envelope_has_eleven_keys() -> None:
         "notes",
     }
     assert envelope["target"] == target.name
+    assert envelope["operator_notes"] == "生产主库，只读排障。"
     assert envelope["returned"] == 1
     assert envelope["truncated"] is False
     assert envelope["truncation"] is None

@@ -11,7 +11,7 @@ from dr_panda_mcp.web.views import split_install_command
 
 BASE_URL = "http://127.0.0.1"
 
-COMMON = {"timeout_s": "15", "max_rows": "100", "max_bytes": "102400"}
+COMMON = {"timeout_s": "15", "max_rows": "100", "max_bytes": "102400", "operator_notes": "test notes"}
 
 PAYLOADS: dict[str, dict[str, str]] = {
     "mysql": {
