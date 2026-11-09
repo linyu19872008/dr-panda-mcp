@@ -163,6 +163,10 @@ def _endpoint(target: Target) -> str:
         return f"{server or EMPTY} · {protocol}"
     if kind == "cls":
         return str(options.get("region") or EMPTY)
+    if kind == "nacos":
+        return str(options.get("base_url") or EMPTY)
+    if kind == "jenkins":
+        return str(options.get("base_url") or EMPTY)
     return EMPTY
 
 
@@ -190,6 +194,16 @@ def _scope(target: Target) -> tuple[str, dict[str, Any]]:
         items = options.get("allowed_topics") or []
         source = "{count} 个 topic" if kind == "kafka" else "{count} 个日志主题"
         return (source, {"count": len(items)}) if items else ("未授权", {})
+    if kind == "nacos":
+        namespaces = options.get("allowed_namespaces") or []
+        data_scope = str(options.get("data_scope") or "selected").strip() or "selected"
+        return (
+            "{count} 个命名空间 · 配置 {data_scope}",
+            {"count": len(namespaces), "data_scope": data_scope},
+        )
+    if kind == "jenkins":
+        jobs = options.get("allowed_jobs") or []
+        return ("{count} 个 Job", {"count": len(jobs)}) if jobs else ("未授权", {})
     return ("—", {})
 
 

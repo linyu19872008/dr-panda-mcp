@@ -30,7 +30,7 @@ def register_jenkins_tools(server: FastMCP, runtime: Runtime) -> None:
             started = time.monotonic()
             connector = get_connector("jenkins")
             client = await runtime.catalog.client(tgt, connector)
-            rows = await client.jobs()
+            rows = await connector.jobs(client, tgt)
             return finish(
                 tgt,
                 summary="Jenkins jobs",
@@ -62,7 +62,7 @@ def register_jenkins_tools(server: FastMCP, runtime: Runtime) -> None:
             started = time.monotonic()
             connector = get_connector("jenkins")
             client = await runtime.catalog.client(tgt, connector)
-            row = await client.job(job)
+            row = await connector.job(client, tgt, job=job)
             return finish(
                 tgt,
                 summary=f"Jenkins job {job}",
@@ -97,7 +97,7 @@ def register_jenkins_tools(server: FastMCP, runtime: Runtime) -> None:
                 raise errors.InvalidArgument("limit must be between 1 and 100")
             connector = get_connector("jenkins")
             client = await runtime.catalog.client(tgt, connector)
-            rows = await client.builds(job, limit or None)
+            rows = await connector.builds(client, tgt, job=job, limit=limit or None)
             return finish(
                 tgt,
                 summary=f"Jenkins builds {job}",
@@ -130,7 +130,7 @@ def register_jenkins_tools(server: FastMCP, runtime: Runtime) -> None:
             started = time.monotonic()
             connector = get_connector("jenkins")
             client = await runtime.catalog.client(tgt, connector)
-            row = await client.build(job, build_number)
+            row = await connector.build(client, tgt, job=job, number=build_number)
             return finish(
                 tgt,
                 summary=f"Jenkins build {job} #{build_number}",
@@ -163,7 +163,9 @@ def register_jenkins_tools(server: FastMCP, runtime: Runtime) -> None:
             started = time.monotonic()
             connector = get_connector("jenkins")
             client = await runtime.catalog.client(tgt, connector)
-            content, cut = await client.console(job, build_number)
+            content, cut = await connector.console(
+                client, tgt, job=job, number=build_number
+            )
             return finish(
                 tgt,
                 summary=f"Jenkins console {job} #{build_number}",
@@ -176,7 +178,11 @@ def register_jenkins_tools(server: FastMCP, runtime: Runtime) -> None:
                         "truncated": cut,
                     }
                 ],
-                stats={"job": job, "build_number": build_number, "bytes": len(content.encode("utf-8"))},
+                stats={
+                    "job": job,
+                    "build_number": build_number,
+                    "bytes": len(content.encode("utf-8")),
+                },
             )
 
         return await run_tool(
@@ -199,7 +205,7 @@ def register_jenkins_tools(server: FastMCP, runtime: Runtime) -> None:
             started = time.monotonic()
             connector = get_connector("jenkins")
             client = await runtime.catalog.client(tgt, connector)
-            rows = await client.nodes()
+            rows = await connector.nodes(client, tgt)
             return finish(
                 tgt,
                 summary="Jenkins nodes",
@@ -228,7 +234,7 @@ def register_jenkins_tools(server: FastMCP, runtime: Runtime) -> None:
             started = time.monotonic()
             connector = get_connector("jenkins")
             client = await runtime.catalog.client(tgt, connector)
-            rows = await client.queue()
+            rows = await connector.queue(client, tgt)
             return finish(
                 tgt,
                 summary="Jenkins queue",

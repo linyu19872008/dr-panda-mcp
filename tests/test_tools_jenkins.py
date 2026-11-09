@@ -21,50 +21,45 @@ JENKINS_TOOLS = {
 }
 
 
-class FakeJenkinsClient:
-    def __init__(self) -> None:
-        self.calls: list[tuple[str, Any]] = []
-
-    async def jobs(self):
-        self.calls.append(("jobs", None))
-        return [{"job": "demo-job", "color": "blue"}]
-
-    async def job(self, job):
-        self.calls.append(("job", job))
-        return {"job": job, "color": "blue"}
-
-    async def builds(self, job, limit=None):
-        self.calls.append(("builds", (job, limit)))
-        return [{"job": job, "number": 1, "result": "SUCCESS"}]
-
-    async def build(self, job, number):
-        self.calls.append(("build", (job, number)))
-        return {"job": job, "number": number, "result": "SUCCESS"}
-
-    async def console(self, job, number):
-        self.calls.append(("console", (job, number)))
-        return "log line", False
-
-    async def nodes(self):
-        self.calls.append(("nodes", None))
-        return [{"node": "Built-In Node", "offline": False}]
-
-    async def queue(self):
-        self.calls.append(("queue", None))
-        return [{"job": "demo-job", "why": "waiting"}]
-
-
 class FakeJenkinsConnector:
     name = "jenkins"
 
     def __init__(self) -> None:
-        self.client = FakeJenkinsClient()
+        self.calls: list[tuple[str, Any]] = []
 
     def create_client(self, target):
-        return self.client
+        return object()
 
     async def close_client(self, client):
         return None
+
+    async def jobs(self, client, target):
+        self.calls.append(("jobs", None))
+        return [{"job": "demo-job", "color": "blue"}]
+
+    async def job(self, client, target, *, job):
+        self.calls.append(("job", job))
+        return {"job": job, "color": "blue"}
+
+    async def builds(self, client, target, *, job, limit=None):
+        self.calls.append(("builds", (job, limit)))
+        return [{"job": job, "number": 1, "result": "SUCCESS"}]
+
+    async def build(self, client, target, *, job, number):
+        self.calls.append(("build", (job, number)))
+        return {"job": job, "number": number, "result": "SUCCESS"}
+
+    async def console(self, client, target, *, job, number):
+        self.calls.append(("console", (job, number)))
+        return "log line", False
+
+    async def nodes(self, client, target):
+        self.calls.append(("nodes", None))
+        return [{"node": "Built-In Node", "offline": False}]
+
+    async def queue(self, client, target):
+        self.calls.append(("queue", None))
+        return [{"job": "demo-job", "why": "waiting"}]
 
 
 async def _setup(runtime: Runtime) -> None:
@@ -128,7 +123,7 @@ async def test_jenkins_tools(
     assert console["rows"][0]["content"] == "log line"
     assert nodes["rows"][0]["node"] == "Built-In Node"
     assert queue["rows"][0]["why"] == "waiting"
-    assert fake.client.calls == [
+    assert fake.calls == [
         ("jobs", None),
         ("job", "demo-job"),
         ("builds", ("demo-job", None)),

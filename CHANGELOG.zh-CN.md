@@ -6,6 +6,20 @@
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-11-10
+
+### 修复
+
+- Nacos 连接器门面补齐：`nacos_configs` / `nacos_config` / `nacos_services` / `nacos_instances` 不再运行时 `AttributeError`。
+- MySQL 空 `allowed_dbs` 按表单说明回落到「仅 default_db」。
+- Nacos 表单校验与连接器遗留默认对齐；`api_version=v3` 时禁止 `data_scope`/`service_scope=all`。
+- 目标列表 endpoint/scope 摘要覆盖 Nacos 与 Jenkins；这两类仅改范围时跳过探活。
+
+### 变更
+
+- Jenkins 工具改为走 connector 门面（与其他组件一致）。
+- 新增契约测试：tools 的 `connector.*` 调用必须存在于真实 connector。
+
 ## [1.9.0] - 2026-11-10
 
 ### 新增

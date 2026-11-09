@@ -514,6 +514,40 @@ async def test_redis_scope_and_scan_limit(
     assert redis.calls == []
 
 
+async def test_mysql_empty_allowed_dbs_falls_back_to_default_db(
+    runtime: Runtime, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await _target(
+        runtime,
+        "mysql",
+        "db-mysql-default-only",
+        {
+            "host": "127.0.0.1",
+            "port": 3306,
+            "user": "ro",
+            "default_db": "app",
+            "allowed_dbs": [],
+            "max_rows": 10,
+            "max_bytes": 102400,
+            "timeout_s": 15,
+        },
+        {"password": "pw"},
+    )
+    mysql = FakeMySQL()
+    _patch(monkeypatch, mysql=mysql)
+
+    tables = await _call(runtime, "mysql_tables", {"target": "db-mysql-default-only"})
+    denied = await _error(
+        runtime,
+        "mysql_tables",
+        {"target": "db-mysql-default-only", "db": "other"},
+    )
+
+    assert tables["stats"]["db"] == "app"
+    assert errors.SCOPE_DENIED in denied
+    assert any("TABLE STATUS" in call for call in mysql.calls)
+
+
 async def test_processlist_requires_explicit_target_switch(
     runtime: Runtime, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261110a"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261110b"></a>
   <a href="https://github.com/linyu19872008/dr-panda-mcp/blob/main/LICENSE"><img alt="License: MIT" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -114,7 +114,7 @@ Health check:
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.9.0","db":"ok"}
+# {"ok":true,"version":"1.9.1","db":"ok"}
 ```
 
 ### Optional dependencies
@@ -151,7 +151,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-It also supports PyPI installation (`--method pypi --version 1.9.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
+It also supports PyPI installation (`--method pypi --version 1.9.1`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
 
 ---
 

@@ -20,7 +20,7 @@
 ./scripts/setup.sh install --method source --dev
 
 # PyPI 安装到专用目录
-sudo ./scripts/setup.sh install --method pypi --version 1.9.0 --dir /opt/dr-panda-mcp
+sudo ./scripts/setup.sh install --method pypi --version 1.9.1 --dir /opt/dr-panda-mcp
 
 # systemd 服务（Linux、root）；默认专用用户 drpanda
 sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp

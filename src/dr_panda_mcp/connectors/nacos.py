@@ -535,5 +535,55 @@ class NacosConnector:
     async def close_client(self, client: _NacosClient) -> None:
         return None
 
+    async def configs(
+        self,
+        client: _NacosClient,
+        target: Target,
+        *,
+        namespace: str,
+        group: str,
+        page: int = 1,
+        page_size: int = 50,
+    ) -> tuple[list[dict[str, Any]], int]:
+        return await client.configs(
+            namespace=namespace, group=group, page=page, page_size=page_size
+        )
+
+    async def config(
+        self,
+        client: _NacosClient,
+        target: Target,
+        *,
+        namespace: str,
+        group: str,
+        data_id: str,
+    ) -> str:
+        return await client.config(namespace=namespace, group=group, data_id=data_id)
+
+    async def services(
+        self,
+        client: _NacosClient,
+        target: Target,
+        *,
+        namespace: str,
+        group: str,
+        page: int = 1,
+        page_size: int = 50,
+    ) -> tuple[list[dict[str, Any]], int]:
+        return await client.services(
+            namespace=namespace, group=group, page=page, page_size=page_size
+        )
+
+    async def instances(
+        self,
+        client: _NacosClient,
+        target: Target,
+        *,
+        namespace: str,
+        group: str,
+        service: str,
+    ) -> list[dict[str, Any]]:
+        return await client.instances(namespace=namespace, group=group, service=service)
+
 
 connector = NacosConnector()

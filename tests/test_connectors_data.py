@@ -108,6 +108,14 @@ def test_force_limit_and_mysql_scope() -> None:
     with pytest.raises(errors.ScopeDenied):
         _mysql_scope(target, "SHOW DATABASES", "app")
 
+    default_only = make_target(
+        type_="mysql", options={"allowed_dbs": [], "default_db": "app"}
+    )
+    _mysql_scope(default_only, "SELECT * FROM users", "app")
+    _mysql_scope(default_only, "SELECT * FROM app.users", "app")
+    with pytest.raises(errors.ScopeDenied):
+        _mysql_scope(default_only, "SELECT * FROM other.users", "app")
+
 
 def _es_target() -> Target:
     return make_target(

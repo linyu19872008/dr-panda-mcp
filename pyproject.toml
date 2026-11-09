@@ -1,6 +1,6 @@
 [project]
 name = "dr-panda-mcp"
-version = "1.9.0"
+version = "1.9.1"
 description = "Read-only MCP service for production troubleshooting: register connections in a web console, call tools by target name"
 readme = "README.pypi.md"
 license = "MIT"

@@ -58,12 +58,24 @@ def ensure_mongo_collection(target: Target, collection: str) -> str:
 
 def ensure_db(target: Target, db: str) -> str:
     allowed = _items(target, "allowed_dbs")
-    default = str(target.options.get("default_db") or "")
+    default = str(target.options.get("default_db") or "").strip()
     value = (db or "").strip() or default
     if not value:
         raise errors.InvalidArgument(
             "db is required (the target has no default_db configured)"
         )
+    # Empty allowlist means "default_db only" (matches the web form help text).
+    if not allowed:
+        if not default:
+            raise errors.ScopeDenied(
+                f"target {target.name} has no authorized databases "
+                "(configure allowed_dbs or default_db)"
+            )
+        if value != default:
+            raise errors.ScopeDenied(
+                f"database {value} is not within the authorized scope of target {target.name}"
+            )
+        return value
     if value not in allowed:
         raise errors.ScopeDenied(
             f"database {value} is not within the authorized scope of target {target.name}"
@@ -129,9 +141,17 @@ def _explain_inner(sql: str) -> str:
     return _EXPLAIN_PREFIX.sub("", sql.strip(), count=1).strip()
 
 
+def _mysql_allowed_dbs(target: Target, default_db: str) -> set[str]:
+    allowed = _items(target, "allowed_dbs")
+    if not allowed and default_db:
+        allowed = [default_db]
+    return {item.lower() for item in allowed}
+
+
 def _mysql_scope(target: Target, sql: str, default_db: str) -> None:
     """库级范围：所有表/库引用必须在 allowed_dbs 内；禁止 SHOW DATABASES。"""
     expression = sqlglot.parse_one(sql, dialect=mysql_guard.DIALECT)
+    allowed_lower = _mysql_allowed_dbs(target, default_db)
     if isinstance(expression, exp.Show):
         command = str(expression.this or "").upper()
         if command == "DATABASES":
@@ -139,18 +159,15 @@ def _mysql_scope(target: Target, sql: str, default_db: str) -> None:
                 "listing all databases at the target level is not allowed"
             )
         db = expression.args.get("db")
-        if db is not None and str(db.name).lower() not in {
-            item.lower() for item in _items(target, "allowed_dbs")
-        }:
+        if db is not None and str(db.name).lower() not in allowed_lower:
             raise errors.ScopeDenied(
                 f"database {db.name} is not within the authorized scope of target {target.name}"
             )
         return
     inner = expression.this if isinstance(expression, exp.Describe) else expression
-    allowed = set(_items(target, "allowed_dbs"))
     for table in inner.find_all(exp.Table):
         db = (table.db or default_db).lower()
-        if db and db not in {item.lower() for item in allowed}:
+        if db and db not in allowed_lower:
             raise errors.ScopeDenied(
                 f"database {db} is not within the authorized scope of target {target.name}"
             )

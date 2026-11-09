@@ -360,5 +360,55 @@ class JenkinsConnector:
     async def close_client(self, client: _JenkinsClient) -> None:
         return None
 
+    async def jobs(
+        self, client: _JenkinsClient, target: Target
+    ) -> list[dict[str, Any]]:
+        return await client.jobs()
+
+    async def job(
+        self, client: _JenkinsClient, target: Target, *, job: str
+    ) -> dict[str, Any]:
+        return await client.job(job)
+
+    async def builds(
+        self,
+        client: _JenkinsClient,
+        target: Target,
+        *,
+        job: str,
+        limit: int | None = None,
+    ) -> list[dict[str, Any]]:
+        return await client.builds(job, limit)
+
+    async def build(
+        self,
+        client: _JenkinsClient,
+        target: Target,
+        *,
+        job: str,
+        number: int,
+    ) -> dict[str, Any]:
+        return await client.build(job, number)
+
+    async def console(
+        self,
+        client: _JenkinsClient,
+        target: Target,
+        *,
+        job: str,
+        number: int,
+    ) -> tuple[str, bool]:
+        return await client.console(job, number)
+
+    async def nodes(
+        self, client: _JenkinsClient, target: Target
+    ) -> list[dict[str, Any]]:
+        return await client.nodes()
+
+    async def queue(
+        self, client: _JenkinsClient, target: Target
+    ) -> list[dict[str, Any]]:
+        return await client.queue()
+
 
 connector = JenkinsConnector()

@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-11-10
+
+### Fixed
+
+- Nacos connector facade: `nacos_configs` / `nacos_config` / `nacos_services` / `nacos_instances` no longer raise `AttributeError` at runtime.
+- MySQL empty `allowed_dbs` now means "default_db only", matching the web form help text.
+- Nacos form validation aligns legacy missing scope modes with connector defaults; `api_version=v3` rejects `data_scope`/`service_scope=all`.
+- Target list endpoint/scope summaries now cover Nacos and Jenkins; scope-only edits skip probe for those types.
+
+### Changed
+
+- Jenkins tools now call connector facades (`connector.jobs(...)` etc.), matching the other connectors.
+- Added a contract test so tools `connector.*` calls must exist on real connectors.
+
 ## [1.9.0] - 2026-11-10
 
 ### Added

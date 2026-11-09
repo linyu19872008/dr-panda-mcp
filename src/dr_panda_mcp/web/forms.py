@@ -671,12 +671,27 @@ def _cross_validate(
     if spec.type == "nacos":
         namespaces = options.get("allowed_namespaces") or []
         groups = options.get("allowed_groups") or []
-        data_scope = str(options.get("data_scope") or "all")
-        service_scope = str(options.get("service_scope") or "all")
+        # Match connector/_scope_mode: missing mode on saved targets stays selected;
+        # new form submissions still default to all via Field.default.
+        if existing is not None and "data_scope" not in (existing.options or {}):
+            data_scope = str(options.get("data_scope") or "selected")
+        else:
+            data_scope = str(options.get("data_scope") or "all")
+        if existing is not None and "service_scope" not in (existing.options or {}):
+            service_scope = str(options.get("service_scope") or "selected")
+        else:
+            service_scope = str(options.get("service_scope") or "all")
         if data_scope == "selected" and not options.get("allowed_data_ids"):
             errors["allowed_data_ids"] = "selected 模式至少填写一个允许的 dataId，或改为 all"
         if service_scope == "selected" and not options.get("allowed_services"):
             errors["allowed_services"] = "selected 模式至少填写一个允许的服务名，或改为 all"
+        api_version = str(options.get("api_version") or "auto").strip().lower()
+        if api_version == "v3" and data_scope == "all":
+            errors["data_scope"] = "Nacos 3（api_version=v3）不支持 data_scope=all，请改为 selected"
+        if api_version == "v3" and service_scope == "all":
+            errors["service_scope"] = (
+                "Nacos 3（api_version=v3）不支持 service_scope=all，请改为 selected"
+            )
         if not namespaces:
             errors["allowed_namespaces"] = "至少填写一个允许的命名空间"
         if not groups:
@@ -907,6 +922,17 @@ PROBE_SKIP_OPTION_KEYS = frozenset(
         "allowed_vhosts",
         "allowed_topics",
         "key_prefix",
+        "allowed_namespaces",
+        "allowed_groups",
+        "allowed_data_ids",
+        "allowed_services",
+        "data_scope",
+        "service_scope",
+        "allowed_jobs",
+        "allowed_nodes",
+        "allow_console",
+        "max_builds",
+        "operator_notes",
     }
 )
 
