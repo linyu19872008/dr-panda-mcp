@@ -204,7 +204,17 @@ Authorization = "Bearer <token>"
 
 ### DeepSeek Harness
 
-Use `serverName = drpanda`; model-side tool names look like:
+**Recommended:** install the carrier plugin [`dsh-dr-panda-mcp`](https://github.com/linyu19872008/dsh-dr-panda-mcp) from the plugin market or via CLI:
+
+```bash
+dsh plugin --profile web add github:linyu19872008/dsh-dr-panda-mcp
+export DR_PANDA_MCP_URL=http://127.0.0.1:8111/mcp
+export DR_PANDA_MCP_TOKEN='<token from My account>'
+```
+
+Then restart DSH. Tools appear as `mcp__drpanda__*`. Call `drpanda_mcp_doctor` if the bridge fails.
+
+Manual patch (without the plugin) still works: use `serverName = drpanda`; model-side tool names look like:
 
 ```text
 mcp__drpanda__mysql_query

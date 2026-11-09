@@ -204,7 +204,17 @@ Authorization = "Bearer <token>"
 
 ### DeepSeek Harness
 
-`serverName` 使用 `drpanda`，模型侧工具名形如：
+**推荐：** 从插件市场或 CLI 安装 carrier 插件 [`dsh-dr-panda-mcp`](https://github.com/linyu19872008/dsh-dr-panda-mcp)：
+
+```bash
+dsh plugin --profile web add github:linyu19872008/dsh-dr-panda-mcp
+export DR_PANDA_MCP_URL=http://127.0.0.1:8111/mcp
+export DR_PANDA_MCP_TOKEN='<在「我的」页面创建的 Token>'
+```
+
+然后重启 DSH。工具名形如 `mcp__drpanda__*`。桥接失败时先调 `drpanda_mcp_doctor`。
+
+不装插件时仍可手写 patch：`serverName` 使用 `drpanda`，模型侧工具名形如：
 
 ```text
 mcp__drpanda__mysql_query
