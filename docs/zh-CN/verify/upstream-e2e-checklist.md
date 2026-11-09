@@ -22,6 +22,11 @@
 - [ ] `jenkins_nodes` 只返回 `allowed_nodes`
 - [ ] `jenkins_queue` 只显示授权 Job 的排队项
 - [ ] 越权 job/node → `SCOPE_DENIED`
+- [ ] 多级文件夹 Job（`folder/sub/job`）可用
+- [ ] Queue 非空时返回等待原因
+- [ ] 反向代理 + TLS 可访问
+- [ ] 原生 TLS + CA 可访问
+- [ ] header-based SSO：记录为不兼容或使用受控代理身份
 
 ## Nacos
 
