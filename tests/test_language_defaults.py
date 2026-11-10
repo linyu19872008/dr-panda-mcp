@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from dr_panda_mcp import capabilities
 from dr_panda_mcp.settings import SETTING_GROUPS, SETTING_SPECS
 from dr_panda_mcp.web.forms import COMMON_FIELDS, TYPE_SPECS
 from dr_panda_mcp.web.i18n import t, use_locale
@@ -69,6 +70,7 @@ def test_english_catalog_covers_source_keys() -> None:
     )
     keys = _template_keys() | _python_keys() | _metadata_keys()
     keys.update(ERROR_LABELS.values())
+    keys.update(capabilities.ui_summary_keys())
     keys.add(ERROR_CODE_DISPLAY)
     missing = sorted(key for key in keys if key and CJK.search(key) and key not in catalog)
     assert missing == [], f"missing English catalog keys: {missing[:10]}"

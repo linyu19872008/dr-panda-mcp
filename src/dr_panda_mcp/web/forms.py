@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from dr_panda_mcp import capabilities
 from dr_panda_mcp.store.protocol import SecretPatch, Target, TargetDraft
 
 # Tencent CLS LogsetId / TopicId are UUIDs; friendly names must not be registered.
@@ -526,6 +527,18 @@ def parse_form(
         elif parsed is not None:
             options[field.key] = parsed
 
+    # Only persist enabled_tools when the capability panel was submitted
+    # (tests / older clients omit the panel → keep legacy "all defaults on").
+    if form.get("capabilities_form") is not None:
+        selected_tools = capabilities.parse_enabled_tools(form, spec.type)
+        values["_enabled_tools"] = "\n".join(selected_tools)
+        options[capabilities.ENABLED_TOOLS_KEY] = selected_tools
+    elif existing is not None and capabilities.ENABLED_TOOLS_KEY in existing.options:
+        # Preserve prior selection when an edit payload omits the panel.
+        options[capabilities.ENABLED_TOOLS_KEY] = list(
+            existing.options.get(capabilities.ENABLED_TOOLS_KEY) or []
+        )
+
     for key, _label, default, (low, high) in COMMON_FIELDS:
         raw = _raw(form, key)
         values[key] = raw
@@ -886,6 +899,9 @@ def option_rows(
 ) -> list[dict[str, Any]]:
     rows = []
     for field in spec.options:
+        if field.key in capabilities.CAPABILITY_OPTION_KEYS:
+            # Rendered in the Available capabilities panel instead.
+            continue
         section = (
             "advanced"
             if field.key in ADVANCED_OPTION_KEYS
@@ -972,6 +988,7 @@ PROBE_SKIP_OPTION_KEYS = frozenset(
         "allow_console",
         "max_builds",
         "operator_notes",
+        capabilities.ENABLED_TOOLS_KEY,
     }
 )
 

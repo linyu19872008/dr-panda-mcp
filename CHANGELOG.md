@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-11-10
+
+### Added
+
+- Target form **Available capabilities** panel: list MCP tools with protocol hints; default-checked; saveable narrow-only via `enabled_tools`.
+- Risk opt-ins (`allow_processlist`, `allow_console`) live in the same panel (default off).
+- `systems_status` returns per-target `capabilities`; target list shows enabled/total tools.
+- `run_tool` rejects disabled tools with actionable `allowed: …` guidance.
+
 ## [1.11.0] - 2026-11-10
 
 ### Added

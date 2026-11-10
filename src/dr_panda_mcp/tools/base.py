@@ -12,7 +12,7 @@ from typing import Annotated, Any
 from fastmcp.exceptions import ToolError
 from pydantic import Field
 
-from dr_panda_mcp import auth, errors
+from dr_panda_mcp import auth, capabilities, errors
 from dr_panda_mcp.connectors import base as connectors_base
 from dr_panda_mcp.log import (
     current_request_id,
@@ -335,6 +335,7 @@ async def run_tool(
         target = await runtime.catalog.resolve(
             name, environment=environment, expected_type=target_type
         )
+        capabilities.ensure_tool_enabled(target, tool)
         timeout = connectors_base.timeout_seconds(target)
         # 整个调用（含排队）共用同一个 deadline；排队时间计入超时（planning 8.3/9.3）。
         async with asyncio.timeout(timeout):

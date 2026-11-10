@@ -13,7 +13,7 @@
 
 # DrPanda MCP
 
-面向线上故障排查的**只读 MCP 服务**（当前 **1.11.0**）。
+面向线上故障排查的**只读 MCP 服务**（当前 **1.12.0**）。
 
 在网页里登记 **10 类**排查目标（MySQL、MongoDB、Elasticsearch、Redis、GitLab、RabbitMQ、Kafka、CLS、Nacos、Jenkins）的地址、凭证和允许范围；Cursor / Codex / DeepSeek Harness 等通过 Streamable HTTP 调用 `/mcp`，模型只能按 `environment` + `target` 使用只读工具。
 
@@ -107,7 +107,7 @@ http://127.0.0.1:8111/
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.11.0","db":"ok"}
+# {"ok":true,"version":"1.12.0","db":"ok"}
 ```
 
 ### 可选依赖
@@ -144,7 +144,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-也支持 PyPI 安装（`--method pypi --version 1.11.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
+也支持 PyPI 安装（`--method pypi --version 1.12.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
 
 ---
 
@@ -273,12 +273,13 @@ mcp__drpanda__systems_status
 
 先读这一节，能少打很多无效调用：
 
-1. **先 `systems_status`**：确认 `environment` 调用标识、target 名称，以及 `scope` / `operator_notes`。
-2. **只用 scope 里的选择器**：CLS 必须是 `logsetId/topicId` UUID；不要猜容器名或中文主题名。
-3. **先发现再查询**：MySQL 用 `mysql_tables` → `mysql_describe` → `mysql_query`（不要查 `information_schema`）；Mongo 统计用 `mongo_stats`，不要用 `$collStats`/`$count` 硬闯 aggregate。
-4. **Nacos**：多 namespace/group 时要显式传入；列表超字节时缩小 `page_size`（1–20）或提高 target `max_bytes`（新建 Nacos/Jenkins 默认 1MB）。
-5. **Jenkins**：看 `jenkins_job` 的 `last_failed_build` / `last_successful_build`；节点列表受 `allowed_nodes` 约束，空则拒绝节点读取。
-6. **错误可行动**：Scope / 缺参类错误会附带 `allowed: …` 与 hint，按提示改参再试，不要原参数连打。
+1. **先 `systems_status`**：确认 `environment` 调用标识、target 名称，以及 `scope` / `capabilities` / `operator_notes`。
+2. **遵守 `capabilities`**：只调用 `enabled: true` 的工具；未启用工具仍出现在 MCP 清单里，但调用会被拒绝。
+3. **只用 scope 里的选择器**：CLS 必须是 `logsetId/topicId` UUID；不要猜容器名或中文主题名。
+4. **先发现再查询**：MySQL 用 `mysql_tables` → `mysql_describe` → `mysql_query`（不要查 `information_schema`）；Mongo 统计用 `mongo_stats`，不要用 `$collStats`/`$count` 硬闯 aggregate。
+5. **Nacos**：多 namespace/group 时要显式传入；列表超字节时缩小 `page_size`（1–20）或提高 target `max_bytes`（新建 Nacos/Jenkins 默认 1MB）。
+6. **Jenkins**：看 `jenkins_job` 的 `last_failed_build` / `last_successful_build`；节点列表受 `allowed_nodes` 约束，空则拒绝节点读取。
+7. **错误可行动**：Scope / 缺参类错误会附带 `allowed: …` 与 hint，按提示改参再试，不要原参数连打。
 
 ---
 

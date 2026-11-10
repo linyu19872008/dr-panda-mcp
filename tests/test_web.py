@@ -691,13 +691,35 @@ async def test_form_sections_and_error_summary(runtime: Runtime) -> None:
         invalid = await client.post("/targets", data=payload)
 
     assert form.status_code == 200
-    for section in ["基本信息", "连接", "授权范围", "密钥", "运行限制"]:
+    for section in ["基本信息", "连接", "授权范围", "可用能力", "密钥", "运行限制"]:
         assert section in form.text
     assert 'name="secret_password"' in form.text
+    assert 'name="enabled_tool"' in form.text
+    assert 'value="mysql_query"' in form.text
+    assert 'name="allow_processlist"' in form.text
     assert invalid.status_code == 400
     assert "有 1 处需要修改" in invalid.text
     assert 'aria-invalid="true"' in invalid.text
     assert "#err-secret_password" in invalid.text
+
+
+async def test_capability_panel_persists_enabled_tools(runtime: Runtime) -> None:
+    payload = dict(PAYLOADS["mysql"])
+    payload["capabilities_form"] = "1"
+    payload["enabled_tool"] = ["mysql_tables", "mysql_describe"]
+
+    async with _client(runtime) as client:
+        created = await client.post("/targets", data=payload)
+        target = await runtime.store.get("mysql-target")
+        edit = await client.get(f"/targets/{target.id}/edit")
+        index = await client.get("/targets")
+
+    assert created.status_code == 303
+    assert target is not None
+    assert target.options.get("enabled_tools") == ["mysql_tables", "mysql_describe"]
+    assert 'value="mysql_tables"' in edit.text
+    assert "可用能力" in index.text
+    assert "已启用 2/5" in index.text
 
 
 async def test_edit_form_shows_secret_badge(runtime: Runtime) -> None:

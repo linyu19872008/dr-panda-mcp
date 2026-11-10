@@ -146,6 +146,36 @@
     </section>
     {% endif %}
 
+    {% if capability_rows %}
+    <section class="card form-section" data-gate="off">
+      <h2 class="form-section__title">{{ t('可用能力') }}</h2>
+      <p class="form-section__desc">{{ t('默认勾选当前产品允许的只读工具；可取消勾选以收紧。不能增加写操作或放开高开销规则。') }}</p>
+      <input type="hidden" name="capabilities_form" value="1">
+      <ul class="capability-list">
+        {% for row in capability_rows %}
+        <li class="capability-item{% if row.risk %} capability-item--risk{% endif %}">
+          <label class="capability-item__label">
+            <input class="checkbox" type="checkbox" name="{{ row.name }}" value="{{ row.value }}"
+                   {% if row.checked %}checked{% endif %} data-gate="off">
+            <span class="capability-item__body">
+              <span class="capability-item__title">
+                <span class="mono">{{ row.tool }}</span>
+                {% if row.risk %}<span class="badge badge--warning">{{ t('风险') }}</span>{% endif %}
+              </span>
+              <span class="capability-item__summary">{{ t(row.summary) }}</span>
+              {% if row.protocol %}
+              <span class="capability-item__protocol">
+                {% for token in row.protocol %}<span class="scope-chip mono">{{ token }}</span>{% endfor %}
+              </span>
+              {% endif %}
+            </span>
+          </label>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
     {% if advanced_rows or advanced_secrets or common_rows %}
     <details class="card form-section form-advanced"{% if advanced_open %} open{% endif %}>
       <summary class="form-section__title">{{ t('高级设置') }}<span class="form-advanced__hint">{{ t('TLS、证书、运行限制') }}</span></summary>

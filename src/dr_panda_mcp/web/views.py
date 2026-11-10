@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from dr_panda_mcp import capabilities
 from dr_panda_mcp.client_install import INSTALL_EXTRAS
 from dr_panda_mcp.errors import sync_extra_command
 from dr_panda_mcp.store.protocol import Target
@@ -66,6 +67,8 @@ class TargetView:
     environment_enabled: bool = True
     operator_notes: str = ""
     scope_groups: tuple[ScopeDetail, ...] = ()
+    capabilities_enabled: int = 0
+    capabilities_total: int = 0
 
 
 _SCOPE_FIELDS: dict[str, tuple[tuple[str, str], ...]] = {
@@ -241,6 +244,7 @@ def to_view(target: Target) -> TargetView:
     spec = TYPE_SPECS.get(target.type)
     scope_source, scope_params = _scope(target)
     message, command = split_install_command(target.last_test_error)
+    caps_enabled, caps_total = capabilities.counts(target)
     return TargetView(
         id=target.id,
         type=target.type,
@@ -266,6 +270,8 @@ def to_view(target: Target) -> TargetView:
         environment_enabled=target.environment_enabled,
         operator_notes=target.operator_notes,
         scope_groups=tuple(scope_details(target)),
+        capabilities_enabled=caps_enabled,
+        capabilities_total=caps_total,
     )
 
 

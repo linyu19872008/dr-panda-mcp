@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261110f"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261110g"></a>
   <a href="https://github.com/linyu19872008/dr-panda-mcp/blob/main/LICENSE"><img alt="License: MIT" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -15,7 +15,7 @@
 
 # DrPanda MCP
 
-A **read-only MCP service** for production troubleshooting (current **1.11.0**).
+A **read-only MCP service** for production troubleshooting (current **1.12.0**).
 
 Register **10 component types** (MySQL, MongoDB, Elasticsearch, Redis, GitLab, RabbitMQ, Kafka, CLS, Nacos, Jenkins) — addresses, credentials and allowed scope — in a web console. MCP clients such as Cursor, Codex and DeepSeek Harness call `/mcp` over Streamable HTTP; models only use read-only tools by `environment` + `target` name.
 
@@ -109,7 +109,7 @@ Health check:
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.11.0","db":"ok"}
+# {"ok":true,"version":"1.12.0","db":"ok"}
 ```
 
 ### Optional dependencies
@@ -146,7 +146,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-It also supports PyPI installation (`--method pypi --version 1.11.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
+It also supports PyPI installation (`--method pypi --version 1.12.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
 
 ---
 
@@ -275,12 +275,13 @@ Each target may include an optional `operator_notes` field (up to 512 characters
 
 Reading this first avoids many useless retries:
 
-1. **Start with `systems_status`**: confirm the `environment` key, target names, and each target's `scope` / `operator_notes`.
-2. **Use only selectors from scope**: CLS topics must be `logsetId/topicId` UUIDs — do not invent container names or Chinese topic titles.
-3. **Discover before querying**: MySQL `mysql_tables` → `mysql_describe` → `mysql_query` (do not query `information_schema`); Mongo stats via `mongo_stats`, not `$collStats`/`$count` through aggregate.
-4. **Nacos**: pass `namespace`/`group` when several are authorized; on byte-limit errors shrink `page_size` (1–20) or raise the target `max_bytes` (new Nacos/Jenkins targets default to 1MB).
-5. **Jenkins**: use `jenkins_job`'s `last_failed_build` / `last_successful_build`; node listing respects `allowed_nodes` (empty means node reads are denied).
-6. **Actionable errors**: Scope / missing-arg failures include `allowed: …` and a hint — change the args, do not repeat the same call.
+1. **Start with `systems_status`**: confirm the `environment` key, target names, and each target's `scope` / `capabilities` / `operator_notes`.
+2. **Honor `capabilities`**: only call tools with `enabled: true`; disabled tools stay in the MCP schema but are rejected.
+3. **Use only selectors from scope**: CLS topics must be `logsetId/topicId` UUIDs — do not invent container names or Chinese topic titles.
+4. **Discover before querying**: MySQL `mysql_tables` → `mysql_describe` → `mysql_query` (do not query `information_schema`); Mongo stats via `mongo_stats`, not `$collStats`/`$count` through aggregate.
+5. **Nacos**: pass `namespace`/`group` when several are authorized; on byte-limit errors shrink `page_size` (1–20) or raise the target `max_bytes` (new Nacos/Jenkins targets default to 1MB).
+6. **Jenkins**: use `jenkins_job`'s `last_failed_build` / `last_successful_build`; node listing respects `allowed_nodes` (empty means node reads are denied).
+7. **Actionable errors**: Scope / missing-arg failures include `allowed: …` and a hint — change the args, do not repeat the same call.
 
 ---
 

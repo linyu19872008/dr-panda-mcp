@@ -6,6 +6,15 @@
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-11-10
+
+### 新增
+
+- 目标表单「可用能力」面板：列出 MCP 工具与协议提示；默认勾选；通过 `enabled_tools` 仅可收紧保存。
+- 高风险只读开关（`allow_processlist`、`allow_console`）并入同一面板（默认关闭）。
+- `systems_status` 返回每个目标的 `capabilities`；目标列表展示已启用工具数。
+- `run_tool` 拒绝未启用工具，并附带可行动的 `allowed: …` 提示。
+
 ## [1.11.0] - 2026-11-10
 
 ### 新增

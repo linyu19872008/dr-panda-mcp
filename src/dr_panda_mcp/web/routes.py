@@ -17,7 +17,7 @@ from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, RedirectResponse, Response
 
-from dr_panda_mcp import auth, client_install
+from dr_panda_mcp import auth, capabilities, client_install
 from dr_panda_mcp import errors as app_errors
 from dr_panda_mcp import settings as settings_module
 from dr_panda_mcp.connectors import base as connector_base
@@ -1013,6 +1013,11 @@ async def _form_page(
         option_rows=forms.option_rows(spec, values, errors),
         secret_rows=forms.secret_rows(spec, errors, existing),
         common_rows=forms.common_rows(values, errors, defaults=common_defaults),
+        capability_rows=capabilities.form_rows(
+            spec.type,
+            options=existing.options if existing is not None else {},
+            values=values,
+        ),
         test_result=test_result,
         probe_url=(
             f"/targets/{existing.id}/probe"

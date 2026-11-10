@@ -149,5 +149,10 @@ async def test_systems_status_exposes_non_secret_target_scope(runtime: Runtime) 
     assert rows["cls-a"]["scope"] == {"allowed_topics": ["logset/topic-a"]}
     assert rows["gitlab-a"]["scope"] == {"allowed_projects": ["group/app"]}
     assert rows["notes-a"]["operator_notes"] == "生产缓存，默认先看最近 30 分钟。"
+    caps = {item["tool"]: item for item in rows["mysql-a"]["capabilities"]}
+    assert caps["mysql_query"]["enabled"] is True
+    assert caps["mysql_processlist"]["enabled"] is False
+    assert "SELECT" in caps["mysql_query"]["protocol"]
+    assert any("capabilities" in note for note in payload["notes"])
     assert any("logsetId/topicId" in note for note in payload["notes"])
     assert "secret" not in str(payload).lower()

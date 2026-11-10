@@ -8,7 +8,7 @@ from typing import Any
 from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
 
-from dr_panda_mcp import errors
+from dr_panda_mcp import capabilities, errors
 from dr_panda_mcp.connectors import base
 from dr_panda_mcp.runtime import Runtime
 from dr_panda_mcp.store.protocol import Target
@@ -134,6 +134,7 @@ async def _targets(runtime: Runtime, key: str) -> dict[str, Any]:
             "enabled": target.enabled,
             "operator_notes": target.operator_notes,
             "scope": _target_scope(target),
+            "capabilities": capabilities.capabilities_payload(target),
             "last_test_at": _iso(target.last_test_at),
             "last_test_ok": target.last_test_ok,
             "last_test_error": target.last_test_error,
@@ -151,6 +152,11 @@ async def _targets(runtime: Runtime, key: str) -> dict[str, Any]:
             "from scope.allowed_dbs / allowed_indices / allowed_topics / "
             "allowed_vhosts / allowed_projects; an empty list means no value is "
             "authorized. A null key_prefix means no Redis prefix restriction."
+        ),
+        (
+            "Each target's capabilities list which MCP tools are enabled. "
+            "Disabled tools stay listed in the MCP schema but calls are rejected; "
+            "operators can only narrow tools, never add write or dangerous operations."
         ),
     ]
     if any(target.type == "cls" for target in targets):
