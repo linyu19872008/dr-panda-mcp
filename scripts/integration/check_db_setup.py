@@ -23,10 +23,12 @@ from httpx import ASGITransport
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 
+from alembic.script import ScriptDirectory
+
 from dr_panda_mcp import auth
 from dr_panda_mcp.config import Config
 from dr_panda_mcp.setup import SetupApp
-from dr_panda_mcp.store.migrate import migrate
+from dr_panda_mcp.store.migrate import _alembic_config, migrate
 from dr_panda_mcp.store.url import create_engine
 
 BASE = "http://127.0.0.1"
@@ -149,7 +151,9 @@ async def run_setup(target: Target) -> None:
                         text("SELECT COUNT(*) FROM users WHERE username = 'admin'")
                     )
                 ).scalar_one()
-            assert version == "0014_target_operator_notes", version
+            heads = ScriptDirectory.from_config(_alembic_config()).get_heads()
+            assert len(heads) == 1, heads
+            assert version == heads[0], version
             assert environment == "Default", environment
             assert admin_count == 1, admin_count
             # Ensure migrations are idempotent on an already-migrated database.
