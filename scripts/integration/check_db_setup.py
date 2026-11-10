@@ -19,11 +19,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import httpx
+from alembic.script import ScriptDirectory
 from httpx import ASGITransport
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
-
-from alembic.script import ScriptDirectory
 
 from dr_panda_mcp import auth
 from dr_panda_mcp.config import Config
