@@ -57,10 +57,16 @@ def ensure_namespace(target: Target, value: str) -> str:
         if len(allowed) == 1:
             candidate = allowed[0]
         else:
-            raise errors.InvalidArgument("namespace is required (the target has multiple allowed namespaces)")
+            raise errors.InvalidArgument(
+                "namespace is required (the target has multiple allowed namespaces)",
+                allowed=allowed,
+                hint="pass namespace explicitly, or call systems_status for scope.allowed_namespaces",
+            )
     if candidate not in allowed:
         raise errors.ScopeDenied(
-            f"namespace {candidate} is not within the authorized scope of target {target.name}"
+            f"namespace {candidate} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_namespaces",
         )
     return candidate
 
@@ -72,10 +78,16 @@ def ensure_group(target: Target, value: str) -> str:
         if len(allowed) == 1:
             candidate = allowed[0]
         else:
-            raise errors.InvalidArgument("group is required (the target has multiple allowed groups)")
+            raise errors.InvalidArgument(
+                "group is required (the target has multiple allowed groups)",
+                allowed=allowed,
+                hint="pass group explicitly, or call systems_status for scope.allowed_groups",
+            )
     if candidate not in allowed:
         raise errors.ScopeDenied(
-            f"group {candidate} is not within the authorized scope of target {target.name}"
+            f"group {candidate} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_groups",
         )
     return candidate
 
@@ -91,7 +103,9 @@ def ensure_data_id(target: Target, value: str) -> str:
         raise errors.ScopeDenied(f"target {target.name} has no authorized data IDs")
     if candidate not in allowed:
         raise errors.ScopeDenied(
-            f"data_id {candidate} is not within the authorized scope of target {target.name}"
+            f"data_id {candidate} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_data_ids, or set data_scope=all",
         )
     return candidate
 
@@ -107,7 +121,9 @@ def ensure_service(target: Target, value: str) -> str:
         raise errors.ScopeDenied(f"target {target.name} has no authorized services")
     if candidate not in allowed:
         raise errors.ScopeDenied(
-            f"service {candidate} is not within the authorized scope of target {target.name}"
+            f"service {candidate} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_services, or set service_scope=all",
         )
     return candidate
 
@@ -213,7 +229,13 @@ class _NacosClient:
             return self._access_token
         return await self._login(client)
 
-    async def _get(self, path: str, params: dict[str, Any] | None = None) -> httpx.Response:
+    async def _get(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        list_response: bool = False,
+    ) -> httpx.Response:
         require(nacos_guard.check_nacos("GET", path))
         client = self._client()
         try:
@@ -222,14 +244,29 @@ class _NacosClient:
             query = dict(params or {})
             if token:
                 query["accessToken"] = token
-            response, _ = await base.stream_http(
-                client,
-                "GET",
-                path,
-                component="nacos",
-                limit=base.max_bytes(self.target),
-                params=query,
+            limit = (
+                base.list_http_max_bytes(self.target)
+                if list_response
+                else base.max_bytes(self.target)
             )
+            try:
+                response, _ = await base.stream_http(
+                    client,
+                    "GET",
+                    path,
+                    component="nacos",
+                    limit=limit,
+                    params=query,
+                )
+            except errors.UpstreamUnavailable as exc:
+                text = str(exc)
+                if "byte limit" in text:
+                    raise errors.UpstreamUnavailable(
+                        f"{text}; for config/service lists try a smaller page_size "
+                        f"(1–20) or raise the target max_bytes (list reads allow up to "
+                        f"{base.LIST_RESPONSE_MAX_BYTES} bytes)"
+                    ) from exc
+                raise
             return response
         except errors.DrPandaError:
             raise
@@ -338,6 +375,7 @@ class _NacosClient:
                     "pageNo": page,
                     "pageSize": page_size,
                 },
+                list_response=True,
             )
             payload = _json_object(response, "config list")
             items = payload.get("pageItems")
@@ -455,6 +493,7 @@ class _NacosClient:
                 "namespaceId": _tenant(chosen_namespace),
                 "groupName": chosen_group,
             },
+            list_response=True,
         )
         payload = _json_object(response, "service list")
         names = payload.get("services") or payload.get("doms") or []

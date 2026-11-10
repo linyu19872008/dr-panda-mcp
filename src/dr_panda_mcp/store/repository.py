@@ -404,6 +404,9 @@ class SqlConfigStore:
                         summary=_truncate(entry.summary, 1024),
                         outcome=entry.outcome,
                         error_detail=_truncate(entry.error_detail, 512),
+                        tool=(entry.tool or None),
+                        elapsed_ms=entry.elapsed_ms,
+                        error_code=(entry.error_code or None),
                     )
                 )
         except SQLAlchemyError as exc:
@@ -463,6 +466,9 @@ class SqlConfigStore:
                 summary=row.summary,
                 outcome=row.outcome,
                 error_detail=row.error_detail,
+                tool=getattr(row, "tool", None),
+                elapsed_ms=getattr(row, "elapsed_ms", None),
+                error_code=getattr(row, "error_code", None),
             )
             for row in rows
         ], total

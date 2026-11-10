@@ -24,6 +24,26 @@ COMMON_FIELDS = (
     ("max_bytes", "单次字节上限", 102_400, (4096, 1_048_576)),
 )
 
+# Nacos list APIs and Jenkins console logs often need a larger response budget.
+TYPE_MAX_BYTES_DEFAULTS = {
+    "nacos": 1_048_576,
+    "jenkins": 1_048_576,
+}
+
+
+def _common_default(spec_type: str, key: str, default: Any, defaults: Mapping[str, int] | None) -> Any:
+    if key == "max_bytes" and spec_type in TYPE_MAX_BYTES_DEFAULTS:
+        # Prefer type-specific default for new nacos/jenkins targets unless the
+        # operator explicitly overrode the global settings default for max_bytes
+        # to something other than the form baseline (handled by callers).
+        configured = defaults.get(key) if defaults else None
+        if configured is None or int(configured) == 102_400:
+            return TYPE_MAX_BYTES_DEFAULTS[spec_type]
+        return configured
+    if defaults and key in defaults:
+        return defaults[key]
+    return default
+
 
 @dataclass(frozen=True)
 class Field:
@@ -466,7 +486,7 @@ def initial_values(
         current = options.get(field.key, field.default)
         values[field.key] = _as_text(field, current)
     for key, _label, default, _ranges in COMMON_FIELDS:
-        configured = defaults.get(key, default) if defaults else default
+        configured = _common_default(spec.type, key, default, defaults)
         values[key] = str(options.get(key, configured))
     return values
 
@@ -509,7 +529,7 @@ def parse_form(
     for key, _label, default, (low, high) in COMMON_FIELDS:
         raw = _raw(form, key)
         values[key] = raw
-        configured = defaults.get(key, default) if defaults else default
+        configured = _common_default(spec.type, key, default, defaults)
         parsed, error = _parse_int(raw, low, high)
         if error:
             errors[key] = f"{key} 必须是 {low}–{high} 的整数"

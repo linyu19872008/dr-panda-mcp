@@ -50,7 +50,7 @@ SERVER_INSTRUCTIONS = (
     "per environment, and different environments may have targets with the same name. "
     "When multiple environments are registered you must pass environment; with only "
     "one environment it can be omitted. When there is more than one target of the "
-    "same type you must pass target; nothing is selected automatically. All eight "
+    "same type you must pass target; nothing is selected automatically. All ten "
     "investigation components are strictly read-only. Log and search calls require a "
     "time window and should prefer a trace id; full-table scans and unbounded fetches "
     "are rejected, and you must tell the user whenever results are truncated. Call "

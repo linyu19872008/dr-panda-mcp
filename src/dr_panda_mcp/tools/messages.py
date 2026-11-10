@@ -39,7 +39,9 @@ def ensure_vhost(target: Target, vhost: str) -> str:
         raise errors.ScopeDenied(f"target {target.name} has no authorized vhosts")
     if value not in allowed:
         raise errors.ScopeDenied(
-            f"vhost {value} is not within the authorized scope of target {target.name}"
+            f"vhost {value} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_vhosts",
         )
     return value
 
@@ -50,10 +52,16 @@ def ensure_topic(target: Target, topic: str) -> str:
     if not allowed:
         raise errors.ScopeDenied(f"target {target.name} has no authorized topics")
     if not value:
-        raise errors.InvalidArgument("topic is required")
+        raise errors.InvalidArgument(
+            "topic is required",
+            allowed=allowed,
+            hint="use a value from scope.allowed_topics",
+        )
     if value not in allowed:
         raise errors.ScopeDenied(
-            f"topic {value} is not within the authorized scope of target {target.name}"
+            f"topic {value} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_topics",
         )
     return value
 

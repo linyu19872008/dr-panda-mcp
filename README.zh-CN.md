@@ -13,13 +13,24 @@
 
 # DrPanda MCP
 
-面向线上故障排查的**只读 MCP 服务**。
+面向线上故障排查的**只读 MCP 服务**（当前 **1.11.0**）。
 
-在网页里登记 MySQL、MongoDB、Elasticsearch、Redis、GitLab、RabbitMQ、Kafka、CLS 的地址、凭证和允许访问的范围；Cursor、Codex、DeepSeek Harness 等 MCP 客户端通过 Streamable HTTP 调用 `/mcp`，模型只能按 `target` 名称使用只读工具。
+在网页里登记 **10 类**排查目标（MySQL、MongoDB、Elasticsearch、Redis、GitLab、RabbitMQ、Kafka、CLS、Nacos、Jenkins）的地址、凭证和允许范围；Cursor / Codex / DeepSeek Harness 等通过 Streamable HTTP 调用 `/mcp`，模型只能按 `environment` + `target` 使用只读工具。
 
 **模型不能自行传入主机、账号或密码。**
 
 ![中文配置台](docs/zh-CN/assets/screenshot-zh.png)
+
+### 目录
+
+| 你想… | 去看 |
+|---|---|
+| 5 分钟跑起来 | [快速开始](#快速开始) |
+| 接 Cursor / MCP 客户端 | [客户端接入](#客户端接入) |
+| 查有哪些工具、怎么传参 | [登记目标与工具](#登记目标与工具) |
+| 让 AI 少踩坑 | [给排障 AI 的提示](#给排障-ai-的提示) |
+| 理解只读与审计 | [安全模型](#安全模型) |
+| 升级 / 变更 | [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md) |
 
 ---
 
@@ -37,29 +48,13 @@ DrPanda MCP 把“能查什么”提前收敛成三类边界：
 
 ## 当前状态
 
-M0–M7 已落地并通过测试：
-
-| 阶段 | 内容 | 状态 |
-|---|---|---|
-| M0–M2 | 工程地基、配置库、密钥加密、八类只读闸门 | 完成 |
-| M3 | 配置台网页、MCP `/mcp` 接入 | 完成 |
-| M4 | CLS 日志、GitLab 代码（5 个工具） | 完成 |
-| M5 | MySQL / Mongo / ES / Redis（17 个工具） | 完成 |
-| M6 | RabbitMQ / Kafka（5 个工具） | 完成 |
-| M7 | 首次安装、登录、多 Token、审计到人 | 完成 |
-
-- 工具总数：**28**
+- 工具总数：**39**（10 类组件 + `systems_status`）
 - 质量门禁：GitHub Actions（pytest / ruff / 文档链接检查），状态见顶部 CI 徽标
 - 默认监听：`127.0.0.1:8111`
-- 默认语言：英文（界面、MCP、CLI、文档）；中文文档在 `docs/zh-CN/`
-- 首次安装支持 SQLite / MySQL / PostgreSQL 配置库
-- 前端采用服务端渲染；配置台交互需要 JavaScript，认证与校验仍只在服务端执行
+- 默认语言：英文（界面、MCP、CLI）；中文文档在 `docs/zh-CN/`
+- 配置库：SQLite / MySQL / PostgreSQL
 
-真实联调覆盖：
-
-- MySQL / MongoDB / Elasticsearch / Redis / RabbitMQ 已用 Docker 真实上游验证；
-- MySQL TLS/mTLS、target 级 CA、ES 多 host failover、Mongo 多种认证方式已覆盖；
-- Kafka、CLS、GitLab 工具代码和单测已完成，但**尚未用真实上游做端到端验收**。
+真实联调：MySQL / Mongo / ES / Redis / RabbitMQ / Nacos / Jenkins 等已有 Docker 或现网验证记录；详见 `docs/zh-CN/verify/`。
 
 ---
 
@@ -112,7 +107,7 @@ http://127.0.0.1:8111/
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.10.0","db":"ok"}
+# {"ok":true,"version":"1.11.0","db":"ok"}
 ```
 
 ### 可选依赖
@@ -149,7 +144,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-也支持 PyPI 安装（`--method pypi --version 1.10.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
+也支持 PyPI 安装（`--method pypi --version 1.11.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
 
 ---
 
@@ -271,6 +266,19 @@ mcp__drpanda__systems_status
 目标名称只允许小写字母、数字和连字符，创建后不可修改。密钥只存密文，列表不回显。
 
 每个目标可填写最多 512 个字符的 `operator_notes`（排查提示）。`systems_status` 和具体工具结果会完整返回该字段，作为 AI 的咨询性排查建议；它不会改变授权范围、只读规则或闸门判断。不要填写密码、Token 或私钥。
+
+---
+
+## 给排障 AI 的提示
+
+先读这一节，能少打很多无效调用：
+
+1. **先 `systems_status`**：确认 `environment` 调用标识、target 名称，以及 `scope` / `operator_notes`。
+2. **只用 scope 里的选择器**：CLS 必须是 `logsetId/topicId` UUID；不要猜容器名或中文主题名。
+3. **先发现再查询**：MySQL 用 `mysql_tables` → `mysql_describe` → `mysql_query`（不要查 `information_schema`）；Mongo 统计用 `mongo_stats`，不要用 `$collStats`/`$count` 硬闯 aggregate。
+4. **Nacos**：多 namespace/group 时要显式传入；列表超字节时缩小 `page_size`（1–20）或提高 target `max_bytes`（新建 Nacos/Jenkins 默认 1MB）。
+5. **Jenkins**：看 `jenkins_job` 的 `last_failed_build` / `last_successful_build`；节点列表受 `allowed_nodes` 约束，空则拒绝节点读取。
+6. **错误可行动**：Scope / 缺参类错误会附带 `allowed: …` 与 hint，按提示改参再试，不要原参数连打。
 
 ---
 

@@ -6,6 +6,26 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-11-10
+
+### Added
+
+- Actionable `ScopeDenied` / `InvalidArgument` messages with `allowed: …` and recovery hints.
+- Per-type default `max_bytes`: new Nacos and Jenkins targets default to 1MB.
+- Nacos list HTTP budget via `list_http_max_bytes` so config/service listing is not capped by the smaller result envelope alone.
+- CLS `from`/`to` year bounds (2000–2100) before the upstream call.
+- Jenkins `jenkins_job` returns `last_failed_build` and `last_successful_build`.
+- Audit columns `tool`, `elapsed_ms`, `error_code` (migration `0015`) for queryable call analytics.
+
+### Changed
+
+- README (EN/ZH) rewritten for faster scanning: contents table, 39 tools / 10 components, and an AI troubleshooting tips section.
+- Server copy and prompts refer to ten investigation components; Jenkins/Nacos guidance updated.
+
+### Fixed
+
+- Nacos config/service list calls that previously failed at the target `max_bytes` when upstream pages embedded full content.
+
 ## [1.10.0] - 2026-11-10
 
 ### Fixed

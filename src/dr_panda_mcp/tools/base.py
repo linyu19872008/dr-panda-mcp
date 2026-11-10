@@ -280,6 +280,7 @@ async def write_tool_audit(
         secrets=secrets,
         debug_hint=hint,
     )
+    elapsed_ms = int((time.monotonic() - started) * 1000)
     summary = build_tool_summary(
         tool=tool,
         name=name,
@@ -287,7 +288,7 @@ async def write_tool_audit(
         params=params,
         target=target,
         returned=returned,
-        elapsed_ms=int((time.monotonic() - started) * 1000),
+        elapsed_ms=elapsed_ms,
         error_code=error_code,
         client_prefix=_client_prefix(),
         request_id=current_request_id(),
@@ -303,6 +304,9 @@ async def write_tool_audit(
                 environment_key=environment_key or None,
                 outcome="failed" if error_code else "ok",
                 error_detail=error_detail or None,
+                tool=tool or None,
+                elapsed_ms=elapsed_ms,
+                error_code=error_code,
             )
         )
     except Exception:  # noqa: BLE001 - 审计写失败不影响工具结果
@@ -456,11 +460,15 @@ def ensure_topic(target: Target, topic: str) -> str:
         return allowed[0]
     if not value:
         raise errors.InvalidArgument(
-            "topic is required (this target authorizes multiple topics)"
+            "topic is required (this target authorizes multiple topics)",
+            allowed=allowed,
+            hint="pass logsetId/topicId from scope.allowed_topics (UUIDs, not friendly names)",
         )
     if value not in allowed:
         raise errors.ScopeDenied(
-            f"topic {value} is not within the authorized scope of target {target.name}"
+            f"topic {value} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use logsetId/topicId UUIDs from scope.allowed_topics; call systems_status",
         )
     return value
 
@@ -472,7 +480,9 @@ def ensure_project(target: Target, project: str) -> str:
         raise errors.ScopeDenied(f"target {target.name} has no authorized projects")
     if value not in allowed:
         raise errors.ScopeDenied(
-            f"project {value} is not within the authorized scope of target {target.name}"
+            f"project {value} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_projects",
         )
     return value
 

@@ -42,10 +42,17 @@ def check_cls(
         if start is None or end is None:
             return guard_rejected(
                 "cls.time_window_required",
-                "log search requires a from / to time window",
+                "log search requires a from / to time window "
+                "(ISO-8601, year between 2000 and 2100)",
             )
         if end < start:
             return guard_rejected("cls.invalid_window", "to must not be earlier than from")
+        for label, moment in (("from", start), ("to", end)):
+            if moment.year < 2000 or moment.year > 2100:
+                return guard_rejected(
+                    "cls.invalid_timestamp",
+                    f"{label} year {moment.year} is out of range; use ISO-8601 between 2000 and 2100",
+                )
         limit = forbidden.CLS_MAX_WINDOW
         if max_window_minutes is not None:
             limit = min(limit, timedelta(minutes=max(int(max_window_minutes), 1)))

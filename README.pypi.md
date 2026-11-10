@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261110e"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261110f"></a>
   <a href="https://github.com/linyu19872008/dr-panda-mcp/blob/main/LICENSE"><img alt="License: MIT" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -15,13 +15,24 @@
 
 # DrPanda MCP
 
-A **read-only MCP service** for production troubleshooting.
+A **read-only MCP service** for production troubleshooting (current **1.11.0**).
 
-Register MySQL, MongoDB, Elasticsearch, Redis, GitLab, RabbitMQ, Kafka and CLS connections (addresses, credentials and allowed scope) in a web console. MCP clients such as Cursor, Codex and DeepSeek Harness call `/mcp` over Streamable HTTP; models can only use read-only tools by `target` name.
+Register **10 component types** (MySQL, MongoDB, Elasticsearch, Redis, GitLab, RabbitMQ, Kafka, CLS, Nacos, Jenkins) — addresses, credentials and allowed scope — in a web console. MCP clients such as Cursor, Codex and DeepSeek Harness call `/mcp` over Streamable HTTP; models only use read-only tools by `environment` + `target` name.
 
 **The model never supplies hosts, accounts, or passwords itself.**
 
 ![Web console in English](https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/screenshot-en.png)
+
+### Contents
+
+| You want… | Go to |
+|---|---|
+| Run it in 5 minutes | [Quick start](#quick-start) |
+| Wire Cursor / an MCP client | [Client setup](#client-setup) |
+| See tools and how to pass args | [Targets and tools](#targets-and-tools) |
+| Help the AI avoid dead ends | [Tips for troubleshooting AIs](#tips-for-troubleshooting-ais) |
+| Understand read-only + audit | [Security model](#security-model) |
+| Upgrades / changes | [CHANGELOG.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/CHANGELOG.md) |
 
 ---
 
@@ -39,29 +50,13 @@ DrPanda MCP narrows "what can be queried" into three boundaries:
 
 ## Status
 
-M0–M7 are implemented and tested:
-
-| Phase | Content | Status |
-|---|---|---|
-| M0–M2 | Foundations, config store, secret encryption, eight read-only guards | Done |
-| M3 | Web console, MCP `/mcp` endpoint | Done |
-| M4 | CLS logs, GitLab code (5 tools) | Done |
-| M5 | MySQL / Mongo / ES / Redis (17 tools) | Done |
-| M6 | RabbitMQ / Kafka (5 tools) | Done |
-| M7 | First-run setup, login, multiple tokens, per-actor audit | Done |
-
-- Tools: **28**
+- Tools: **39** (10 component types + `systems_status`)
 - Quality gate: GitHub Actions (pytest / ruff / docs link check); see the CI badge above
 - Default listen: `127.0.0.1:8111`
-- Default languages: English (UI, MCP, CLI, docs); Chinese docs live under `docs/zh-CN/`
-- First-run setup supports SQLite / MySQL / PostgreSQL config stores
-- Server-rendered web console; interactive features require JavaScript, while authentication and validation stay server-side
+- Default languages: English (UI, MCP, CLI); Chinese docs live under `docs/zh-CN/`
+- Config store: SQLite / MySQL / PostgreSQL
 
-Real integration coverage:
-
-- MySQL / MongoDB / Elasticsearch / Redis / RabbitMQ verified against real Docker upstreams;
-- MySQL TLS/mTLS, target-level CA, ES multi-host failover and multiple Mongo auth modes are covered;
-- Kafka, CLS and GitLab tools are implemented and unit-tested, but **not yet end-to-end verified against real upstreams**.
+Real integration: MySQL / Mongo / ES / Redis / RabbitMQ / Nacos / Jenkins have Docker or live verification notes; see `docs/verify/` and `docs/zh-CN/verify/`.
 
 ---
 
@@ -114,7 +109,7 @@ Health check:
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.10.0","db":"ok"}
+# {"ok":true,"version":"1.11.0","db":"ok"}
 ```
 
 ### Optional dependencies
@@ -151,7 +146,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-It also supports PyPI installation (`--method pypi --version 1.10.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
+It also supports PyPI installation (`--method pypi --version 1.11.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
 
 ---
 
@@ -206,7 +201,17 @@ Authorization = "Bearer <token>"
 
 ### DeepSeek Harness
 
-Use `serverName = drpanda`; model-side tool names look like:
+**Recommended:** install the carrier plugin [`dsh-dr-panda-mcp`](https://github.com/linyu19872008/dsh-dr-panda-mcp) from the plugin market or via CLI:
+
+```bash
+dsh plugin --profile web add github:linyu19872008/dsh-dr-panda-mcp
+export DR_PANDA_MCP_URL=http://127.0.0.1:8111/mcp
+export DR_PANDA_MCP_TOKEN='<token from My account>'
+```
+
+Then restart DSH. Tools appear as `mcp__drpanda__*`. Call `drpanda_mcp_doctor` if the bridge fails.
+
+Manual patch (without the plugin) still works: use `serverName = drpanda`; model-side tool names look like:
 
 ```text
 mcp__drpanda__mysql_query
@@ -263,6 +268,19 @@ Target scope can only narrow the readable boundary:
 Target names allow lowercase letters, digits and hyphens only, and are immutable. Secrets are stored encrypted and never echoed in lists.
 
 Each target may include an optional `operator_notes` field (up to 512 characters). It is returned in full by `systems_status` and in target-specific tool results as advisory troubleshooting guidance for the model. It never changes authorization scope, read-only rules, or guard decisions; do not store passwords, tokens, or private keys in it.
+
+---
+
+## Tips for troubleshooting AIs
+
+Reading this first avoids many useless retries:
+
+1. **Start with `systems_status`**: confirm the `environment` key, target names, and each target's `scope` / `operator_notes`.
+2. **Use only selectors from scope**: CLS topics must be `logsetId/topicId` UUIDs — do not invent container names or Chinese topic titles.
+3. **Discover before querying**: MySQL `mysql_tables` → `mysql_describe` → `mysql_query` (do not query `information_schema`); Mongo stats via `mongo_stats`, not `$collStats`/`$count` through aggregate.
+4. **Nacos**: pass `namespace`/`group` when several are authorized; on byte-limit errors shrink `page_size` (1–20) or raise the target `max_bytes` (new Nacos/Jenkins targets default to 1MB).
+5. **Jenkins**: use `jenkins_job`'s `last_failed_build` / `last_successful_build`; node listing respects `allowed_nodes` (empty means node reads are denied).
+6. **Actionable errors**: Scope / missing-arg failures include `allowed: …` and a hint — change the args, do not repeat the same call.
 
 ---
 
@@ -425,7 +443,7 @@ src/dr_panda_mcp/
   server.py           FastMCP, /mcp and web app assembly
   runtime.py          engine, migrations, secrets, ConfigStore
   settings.py         system settings defaults/ranges/groups
-  connectors/         eight upstream connectors
+  connectors/         ten upstream connectors
   guards/             read-only whitelist and dangerous-operation rules
   tools/              MCP tool implementations and audit
   prompts.py          investigate_error

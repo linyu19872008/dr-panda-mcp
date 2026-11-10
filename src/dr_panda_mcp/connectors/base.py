@@ -28,6 +28,15 @@ from dr_panda_mcp.store.protocol import Target
 DEFAULT_TIMEOUT_SECONDS = 15
 DEFAULT_MAX_ROWS = 100
 DEFAULT_MAX_BYTES = 102_400
+# Nacos/Jenkins responses (config lists, console logs) are often larger than
+# typical query payloads; new targets of these types default higher.
+TYPE_DEFAULT_MAX_BYTES: dict[str, int] = {
+    "nacos": 1_048_576,
+    "jenkins": 1_048_576,
+}
+# Upstream list APIs (e.g. Nacos pageItems) may embed content even when we only
+# keep metadata; allow up to the hard cap for those list HTTP reads.
+LIST_RESPONSE_MAX_BYTES = 1_048_576
 
 
 class Connector(Protocol):
@@ -139,13 +148,23 @@ def max_rows(target: Target) -> int:
     return min(max(rows, 1), 1000)
 
 
+def default_max_bytes_for_type(target_type: str) -> int:
+    return TYPE_DEFAULT_MAX_BYTES.get(target_type, DEFAULT_MAX_BYTES)
+
+
 def max_bytes(target: Target) -> int:
-    value = target.options.get("max_bytes", DEFAULT_MAX_BYTES)
+    fallback = default_max_bytes_for_type(target.type)
+    value = target.options.get("max_bytes", fallback)
     try:
         size = int(value)
     except (TypeError, ValueError):
-        return DEFAULT_MAX_BYTES
+        return fallback
     return min(max(size, 4096), 1_048_576)
+
+
+def list_http_max_bytes(target: Target) -> int:
+    """Byte budget for upstream list responses that may embed unused content."""
+    return min(max(max_bytes(target), LIST_RESPONSE_MAX_BYTES), 1_048_576)
 
 
 async def stream_http(

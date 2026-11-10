@@ -88,10 +88,11 @@ def register_logs_tools(server: FastMCP, runtime: Runtime) -> None:
         compact: bool = False,
         environment: EnvironmentParam = "",
     ) -> dict[str, Any]:
-        """Search CLS logs. Requires from/to (ISO8601); window max 24h.
+        """Search CLS logs. Requires from/to (ISO8601, year 2000–2100); window max 24h.
 
-        topic must be an authorized scope value: logsetId/topicId UUIDs, not a
-        friendly name. Default sort is desc (newest first); for a specific
+        topic must be an authorized scope value: logsetId/topicId UUIDs from
+        systems_status / scope.allowed_topics (or operator_notes), not a container
+        or service nickname. Default sort is desc (newest first); for a specific
         incident time, shrink from/to around that moment. Queries with
         `| SELECT` return analysis rows (stats.mode=analysis). Pass
         stats.next_context as context to page beyond offset. Optional

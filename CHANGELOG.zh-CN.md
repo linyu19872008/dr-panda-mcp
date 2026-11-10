@@ -6,6 +6,26 @@
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-11-10
+
+### 新增
+
+- `ScopeDenied` / `InvalidArgument` 错误附带 `allowed: …` 与可行动 hint。
+- 按类型的默认 `max_bytes`：新建 Nacos / Jenkins 目标默认为 1MB。
+- Nacos 列表 HTTP 预算（`list_http_max_bytes`），避免上游 pageItems 带 content 时被结果包络上限单独卡死。
+- CLS `from`/`to` 年份边界校验（2000–2100），在外呼前拒绝非法时间。
+- Jenkins `jenkins_job` 返回 `last_failed_build` / `last_successful_build`。
+- 审计表增加 `tool`、`elapsed_ms`、`error_code`（迁移 `0015`），便于按工具统计调用。
+
+### 变更
+
+- README（中/英）重排：目录、39 工具 / 10 类组件、排障 AI 提示专节。
+- 服务说明与 prompt 统一为十类排查组件；补充 Jenkins / Nacos 用法指引。
+
+### 修复
+
+- Nacos 配置/服务列表在上游响应内嵌 content 时，不再轻易因 target `max_bytes` 失败。
+
 ## [1.10.0] - 2026-11-10
 
 ### 修复

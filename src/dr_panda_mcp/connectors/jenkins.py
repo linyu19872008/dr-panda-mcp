@@ -60,7 +60,9 @@ def ensure_job(target: Target, value: str) -> str:
         raise errors.ScopeDenied(f"target {target.name} has no authorized jobs")
     if candidate not in allowed:
         raise errors.ScopeDenied(
-            f"job {candidate} is not within the authorized scope of target {target.name}"
+            f"job {candidate} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a full job name from scope.allowed_jobs",
         )
     return candidate
 
@@ -72,7 +74,9 @@ def ensure_node(target: Target, value: str) -> str:
         raise errors.ScopeDenied(f"target {target.name} has no authorized nodes")
     if candidate not in allowed:
         raise errors.ScopeDenied(
-            f"node {candidate} is not within the authorized scope of target {target.name}"
+            f"node {candidate} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a displayName from scope.allowed_nodes",
         )
     return candidate
 
@@ -171,7 +175,9 @@ class _JenkinsClient:
                 "tree": (
                     "name,url,color,description,buildable,"
                     "lastBuild[number,result,displayName,duration,timestamp,url],"
-                    "lastCompletedBuild[number,result,displayName,duration,timestamp,url]"
+                    "lastCompletedBuild[number,result,displayName,duration,timestamp,url],"
+                    "lastFailedBuild[number,result,displayName,duration,timestamp,url],"
+                    "lastSuccessfulBuild[number,result,displayName,duration,timestamp,url]"
                 )
             },
         )
@@ -185,6 +191,8 @@ class _JenkinsClient:
             "buildable": payload.get("buildable"),
             "last_build": base.to_jsonable(payload.get("lastBuild") or {}),
             "last_completed_build": base.to_jsonable(payload.get("lastCompletedBuild") or {}),
+            "last_failed_build": base.to_jsonable(payload.get("lastFailedBuild") or {}),
+            "last_successful_build": base.to_jsonable(payload.get("lastSuccessfulBuild") or {}),
         }
 
     async def builds(self, job: str, limit: int | None = None) -> list[dict[str, Any]]:

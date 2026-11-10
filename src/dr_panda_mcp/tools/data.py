@@ -73,12 +73,16 @@ def ensure_db(target: Target, db: str) -> str:
             )
         if value != default:
             raise errors.ScopeDenied(
-                f"database {value} is not within the authorized scope of target {target.name}"
+                f"database {value} is not within the authorized scope of target {target.name}",
+                allowed=[default],
+                hint="empty allowed_dbs means default_db only",
             )
         return value
     if value not in allowed:
         raise errors.ScopeDenied(
-            f"database {value} is not within the authorized scope of target {target.name}"
+            f"database {value} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_dbs",
         )
     return value
 
@@ -87,10 +91,16 @@ def ensure_index(target: Target, index: str) -> str:
     allowed = _items(target, "allowed_indices")
     value = (index or "").strip()
     if not value:
-        raise errors.InvalidArgument("index is required")
+        raise errors.InvalidArgument(
+            "index is required",
+            allowed=allowed,
+            hint="use a value from scope.allowed_indices",
+        )
     if value not in allowed:
         raise errors.ScopeDenied(
-            f"index {value} is not within the authorized scope of target {target.name}"
+            f"index {value} is not within the authorized scope of target {target.name}",
+            allowed=allowed,
+            hint="use a value from scope.allowed_indices",
         )
     return value
 
@@ -310,7 +320,11 @@ def register_data_tools(server: FastMCP, runtime: Runtime) -> None:
     async def mysql_query(
         target: str, sql: str, limit: int = 0, environment: EnvironmentParam = ""
     ) -> dict[str, Any]:
-        """Run a single read-only SQL statement (LIMIT is added automatically)."""
+        """Run a single read-only SQL statement (LIMIT is added automatically).
+
+        Discover schema first with mysql_tables / mysql_describe. information_schema
+        and other system schemas are blocked; do not probe them with SQL.
+        """
         params = {"sql": sql, "limit": limit or None}
 
         async def handler(tgt: Target) -> dict[str, Any]:
@@ -519,7 +533,11 @@ def register_data_tools(server: FastMCP, runtime: Runtime) -> None:
         limit: int = 0,
         environment: EnvironmentParam = "",
     ) -> dict[str, Any]:
-        """Run an aggregation pipeline (stage allowlist; $limit is added automatically)."""
+        """Run an aggregation pipeline (stage allowlist; $limit is added automatically).
+
+        $group/$lookup require a preceding $match. For collection/db stats or indexes,
+        prefer mongo_stats instead of $collStats/$count/$indexStats stages (not allowed).
+        """
         params = {"db": db, "collection": collection, "pipeline": pipeline, "limit": limit or None}
 
         async def handler(tgt: Target) -> dict[str, Any]:
@@ -556,7 +574,7 @@ def register_data_tools(server: FastMCP, runtime: Runtime) -> None:
         collection: str = "",
         environment: EnvironmentParam = "",
     ) -> dict[str, Any]:
-        """Show statistics for a collection or database."""
+        """Show statistics for a collection or database (preferred over aggregate $collStats/$count)."""
         params = {"db": db, "collection": collection or None}
 
         async def handler(tgt: Target) -> dict[str, Any]:

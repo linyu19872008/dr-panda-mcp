@@ -96,7 +96,10 @@ class TargetRow(Base):
 
 class AuditRow(Base):
     __tablename__ = "audit"
-    __table_args__ = (Index("ix_audit_created_at", "created_at"),)
+    __table_args__ = (
+        Index("ix_audit_created_at", "created_at"),
+        Index("ix_audit_tool_created_at", "tool", "created_at"),
+    )
 
     id: Mapped[int] = mapped_column(_pk_type(), primary_key=True, autoincrement=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False)
@@ -110,6 +113,10 @@ class AuditRow(Base):
     outcome: Mapped[str | None] = mapped_column(String(8), nullable=True)
     # 失败原因摘要（已脱敏、截断），只有 tool.call 失败时写；旧行为 NULL。
     error_detail: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    # tool.call 结构化字段（旧行为 NULL，由 summary 仍可解析）。
+    tool: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    elapsed_ms: Mapped[int | None] = mapped_column(BigInteger(), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
 
 class SettingRow(Base):

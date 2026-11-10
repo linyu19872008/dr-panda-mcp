@@ -100,12 +100,57 @@ class InvalidSettings(DrPandaError):
     """系统配置键或取值不合法。"""
 
 
+def guidance_message(
+    message: str,
+    *,
+    allowed: list[str] | None = None,
+    hint: str | None = None,
+    allowed_limit: int = 20,
+) -> str:
+    """Append allowlist / recovery hint so agents can retry without guessing."""
+    parts = [message.rstrip(".")]
+    if allowed:
+        shown = ", ".join(str(item) for item in allowed[:allowed_limit])
+        extra = len(allowed) - allowed_limit
+        suffix = f" (+{extra} more)" if extra > 0 else ""
+        parts.append(f"allowed: {shown}{suffix}")
+    if hint:
+        parts.append(hint.rstrip("."))
+    return "; ".join(parts)
+
+
 class ScopeDenied(DrPandaError):
     """请求超出该目标授权的范围（库/索引/topic/项目/vhost）。"""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str | None = None,
+        allowed: list[str] | None = None,
+        hint: str | None = None,
+    ) -> None:
+        super().__init__(
+            guidance_message(message, allowed=allowed, hint=hint),
+            code=code or SCOPE_DENIED,
+        )
 
 
 class InvalidArgument(DrPandaError):
     """工具参数不合法（缺失、越界、时间窗超限等）。"""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str | None = None,
+        allowed: list[str] | None = None,
+        hint: str | None = None,
+    ) -> None:
+        super().__init__(
+            guidance_message(message, allowed=allowed, hint=hint),
+            code=code or INVALID_ARGUMENT,
+        )
 
 
 class TargetDisabled(DrPandaError):
