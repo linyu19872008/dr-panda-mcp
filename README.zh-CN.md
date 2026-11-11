@@ -19,7 +19,18 @@
 
 **模型不能自行传入主机、账号或密码。**
 
+<p align="center">
+  <img src="docs/zh-CN/assets/architecture-zh.svg" alt="AI 客户端通过 /mcp 调用 DrPanda；凭证与只读闸门留在服务端，模型只能按目标名称查询已登记的生产系统。" width="920">
+</p>
+
+<p align="center"><sub>它在链路里的位置：AI 客户端 → DrPanda（配置台 + MCP + 闸门）→ 生产系统</sub></p>
+
+<details>
+<summary>配置台预览</summary>
+
 ![中文配置台](docs/zh-CN/assets/screenshot-zh.png)
+
+</details>
 
 ### 目录
 

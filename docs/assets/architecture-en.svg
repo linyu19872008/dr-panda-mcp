@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 440" role="img" aria-labelledby="title desc">
+  <title id="title">DrPanda MCP system position</title>
+  <desc id="desc">AI clients call DrPanda MCP over Streamable HTTP; DrPanda holds credentials and read-only guards, then queries registered production targets by name only.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F5F9FC"/>
+      <stop offset="100%" stop-color="#EEF4F8"/>
+    </linearGradient>
+    <linearGradient id="centerFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0F7FB"/>
+    </linearGradient>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="124%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1E3A4C" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#3D6F91"/>
+    </marker>
+  </defs>
+
+  <rect width="1040" height="440" rx="20" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1038" height="438" rx="19" fill="none" stroke="#D7E4EE" stroke-width="1"/>
+
+  <g filter="url(#softShadow)">
+    <rect x="36" y="72" width="230" height="268" rx="16" fill="#FFFFFF" stroke="#D5E3EE"/>
+  </g>
+  <text x="151" y="108" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#3D6F91" letter-spacing="0.08em">AI CLIENTS</text>
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="15" fill="#1F2A33">
+    <rect x="56" y="128" width="190" height="40" rx="10" fill="#F3F8FB" stroke="#E1EBF3"/>
+    <text x="151" y="153" text-anchor="middle">Cursor</text>
+    <rect x="56" y="180" width="190" height="40" rx="10" fill="#F3F8FB" stroke="#E1EBF3"/>
+    <text x="151" y="205" text-anchor="middle">Codex</text>
+    <rect x="56" y="232" width="190" height="40" rx="10" fill="#F3F8FB" stroke="#E1EBF3"/>
+    <text x="151" y="257" text-anchor="middle">DeepSeek Harness</text>
+  </g>
+  <text x="151" y="312" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6B7C8A">ask by target name</text>
+
+  <line x1="278" y1="206" x2="338" y2="206" stroke="#3D6F91" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="308" y="192" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#3D6F91">/mcp</text>
+
+  <g filter="url(#softShadow)">
+    <rect x="352" y="56" width="336" height="300" rx="18" fill="url(#centerFill)" stroke="#3D6F91" stroke-width="2"/>
+  </g>
+  <rect x="352" y="56" width="336" height="10" rx="5" fill="#3D6F91"/>
+  <rect x="352" y="61" width="336" height="5" fill="#3D6F91"/>
+
+  <text x="520" y="98" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#16324A">DrPanda MCP</text>
+  <text x="520" y="120" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#5A7285">read-only troubleshooting middle layer</text>
+
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+    <rect x="376" y="140" width="288" height="48" rx="12" fill="#FFFFFF" stroke="#CFE0EC"/>
+    <circle cx="400" cy="164" r="7" fill="#3D6F91"/>
+    <text x="418" y="160" font-size="13" font-weight="700" fill="#16324A">Web console</text>
+    <text x="418" y="178" font-size="11" fill="#6B7C8A">humans register targets and scope</text>
+
+    <rect x="376" y="200" width="288" height="48" rx="12" fill="#FFFFFF" stroke="#CFE0EC"/>
+    <circle cx="400" cy="224" r="7" fill="#3D6F91"/>
+    <text x="418" y="220" font-size="13" font-weight="700" fill="#16324A">MCP endpoint</text>
+    <text x="418" y="238" font-size="11" fill="#6B7C8A">Streamable HTTP + Bearer token</text>
+
+    <rect x="376" y="260" width="288" height="48" rx="12" fill="#FFF8F1" stroke="#F0C9A0"/>
+    <circle cx="400" cy="284" r="7" fill="#E08A2E"/>
+    <text x="418" y="280" font-size="13" font-weight="700" fill="#7A4510">Guards + audit</text>
+    <text x="418" y="298" font-size="11" fill="#9A6A3A">read-only whitelist, deny writes</text>
+  </g>
+
+  <line x1="700" y1="206" x2="760" y2="206" stroke="#3D6F91" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="730" y="192" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#E08A2E">read-only</text>
+
+  <g filter="url(#softShadow)">
+    <rect x="774" y="72" width="230" height="268" rx="16" fill="#FFFFFF" stroke="#D5E3EE"/>
+  </g>
+  <text x="889" y="108" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#3D6F91" letter-spacing="0.08em">PRODUCTION</text>
+
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#2A3B48">
+    <rect x="794" y="128" width="88" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="838" y="146" text-anchor="middle">MySQL</text>
+    <rect x="892" y="128" width="92" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="938" y="146" text-anchor="middle">MongoDB</text>
+    <rect x="794" y="166" width="88" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="838" y="184" text-anchor="middle">ES</text>
+    <rect x="892" y="166" width="92" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="938" y="184" text-anchor="middle">Redis</text>
+    <rect x="794" y="204" width="88" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="838" y="222" text-anchor="middle">GitLab</text>
+    <rect x="892" y="204" width="92" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="938" y="222" text-anchor="middle">CLS</text>
+    <rect x="794" y="242" width="88" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="838" y="260" text-anchor="middle">Kafka</text>
+    <rect x="892" y="242" width="92" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="938" y="260" text-anchor="middle">RabbitMQ</text>
+    <rect x="794" y="280" width="88" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="838" y="298" text-anchor="middle">Nacos</text>
+    <rect x="892" y="280" width="92" height="28" rx="8" fill="#F3F8FB" stroke="#E1EBF3"/><text x="938" y="298" text-anchor="middle">Jenkins</text>
+  </g>
+
+  <rect x="36" y="368" width="968" height="48" rx="12" fill="#16324A"/>
+  <text x="520" y="390" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#FFFFFF">Tool args are only <tspan fill="#F0C9A0">environment</tspan> + <tspan fill="#F0C9A0">target</tspan> - never hosts, accounts, or passwords</text>
+  <text x="520" y="408" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#A8C0D2">Credentials stay in DrPanda  |  10 component types  |  39 read-only tools</text>
+</svg>

@@ -19,7 +19,18 @@ Register **10 component types** (MySQL, MongoDB, Elasticsearch, Redis, GitLab, R
 
 **The model never supplies hosts, accounts, or passwords itself.**
 
+<p align="center">
+  <img src="docs/assets/architecture-en.svg" alt="AI clients call DrPanda MCP over /mcp; DrPanda keeps credentials and read-only guards, then queries registered production targets by name only." width="920">
+</p>
+
+<p align="center"><sub>Where it sits: AI clients → DrPanda (console + MCP + guards) → production targets</sub></p>
+
+<details>
+<summary>Web console preview</summary>
+
 ![Web console in English](docs/assets/screenshot-en.png)
+
+</details>
 
 ### Contents
 
