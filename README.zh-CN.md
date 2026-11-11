@@ -203,11 +203,9 @@ Authorization = "Bearer <token>"
 
 ```bash
 dsh plugin --profile web add github:linyu19872008/dsh-dr-panda-mcp
-export DR_PANDA_MCP_URL=http://127.0.0.1:8111/mcp
-export DR_PANDA_MCP_TOKEN='<在「我的」页面创建的 Token>'
 ```
 
-然后重启 DSH。工具名形如 `mcp__drpanda__*`。桥接失败时先调 `drpanda_mcp_doctor`。
+重启 DSH，打开 **插件 → dsh-dr-panda-mcp**（或 **设置 → DrPanda MCP**），填写 MCP URL 与「我的」页面的 Bearer Token 并保存，再调用 `mcp__drpanda__systems_status`。桥接失败时先调 `drpanda_mcp_doctor`。CI/无界面场景仍可用环境变量 `DR_PANDA_MCP_URL` / `DR_PANDA_MCP_TOKEN`。
 
 不装插件时仍可手写 patch：`serverName` 使用 `drpanda`，模型侧工具名形如：
 

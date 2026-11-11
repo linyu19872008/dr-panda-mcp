@@ -203,11 +203,9 @@ Authorization = "Bearer <token>"
 
 ```bash
 dsh plugin --profile web add github:linyu19872008/dsh-dr-panda-mcp
-export DR_PANDA_MCP_URL=http://127.0.0.1:8111/mcp
-export DR_PANDA_MCP_TOKEN='<token from My account>'
 ```
 
-Then restart DSH. Tools appear as `mcp__drpanda__*`. Call `drpanda_mcp_doctor` if the bridge fails.
+Restart DSH, open **Plugins → dsh-dr-panda-mcp** (or **Settings → DrPanda MCP**), save the MCP URL and a Bearer token from **My account**, then call `mcp__drpanda__systems_status`. Use `drpanda_mcp_doctor` if the bridge fails. For CI/headless, `DR_PANDA_MCP_URL` / `DR_PANDA_MCP_TOKEN` env vars still work.
 
 Manual patch (without the plugin) still works: use `serverName = drpanda`; model-side tool names look like:
 
