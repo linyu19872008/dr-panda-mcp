@@ -6,6 +6,15 @@
 
 ## [Unreleased]
 
+### 新增
+
+- 贡献者工具：`pre-commit`（ruff；改 `README.md` 时自动重生 `README.pypi.md`；改 `alembic/versions/` 时提醒跑 DB setup）。
+- CI 在 docs job 发现 PyPI README 过期时上传期望的 `README.pypi.md` artifact。
+
+### 变更
+
+- CONTRIBUTING / PR 模板补充 README.pypi 同步，以及 migration 与 DB setup 检查约定。
+
 ## [1.12.0] - 2026-11-10
 
 ### 新增

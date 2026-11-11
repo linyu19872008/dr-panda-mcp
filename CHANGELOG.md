@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- Contributor tooling: `pre-commit` (ruff + auto-regenerate `README.pypi.md` when `README.md` changes; reminder when `alembic/versions/` changes).
+- CI uploads an expected `README.pypi.md` artifact when the docs job detects a stale PyPI README.
+
+### Changed
+
+- CONTRIBUTING / PR template document README.pypi sync and migration + DB setup check expectations.
+
 ## [1.12.0] - 2026-11-10
 
 ### Added

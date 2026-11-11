@@ -6,12 +6,15 @@ uses GitHub absolute URLs. The repository README stays relative for local and
 GitHub rendering.
 
 Usage:
-    python scripts/build_pypi_readme.py          # regenerate
-    python scripts/build_pypi_readme.py --check  # fail if stale
+    python scripts/build_pypi_readme.py                    # regenerate README.pypi.md
+    python scripts/build_pypi_readme.py --check            # fail if stale (prints diff)
+    python scripts/build_pypi_readme.py --output PATH      # write expected content to PATH
 """
 
 from __future__ import annotations
 
+import argparse
+import difflib
 import re
 import sys
 from pathlib import Path
@@ -93,16 +96,45 @@ def build() -> str:
     return header + body
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="exit 1 if README.pypi.md is stale; print a unified diff",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="write generated content to this path instead of README.pypi.md",
+    )
+    args = parser.parse_args(argv)
     content = build()
-    if "--check" in sys.argv[1:]:
-        if not TARGET.exists() or TARGET.read_text(encoding="utf-8") != content:
-            print("README.pypi.md is stale; run python scripts/build_pypi_readme.py")
-            return 1
-        print("README.pypi.md is up to date")
-        return 0
-    TARGET.write_text(content, encoding="utf-8")
-    print(f"wrote {TARGET.relative_to(ROOT)} ({len(content)} bytes)")
+
+    if args.check:
+        current = TARGET.read_text(encoding="utf-8") if TARGET.exists() else ""
+        if current == content:
+            print("README.pypi.md is up to date")
+            return 0
+        print("README.pypi.md is stale; run python scripts/build_pypi_readme.py", file=sys.stderr)
+        sys.stdout.writelines(
+            difflib.unified_diff(
+                current.splitlines(keepends=True),
+                content.splitlines(keepends=True),
+                fromfile="README.pypi.md (committed)",
+                tofile="README.pypi.md (expected)",
+            )
+        )
+        return 1
+
+    destination = args.output if args.output is not None else TARGET
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(content, encoding="utf-8")
+    try:
+        label = destination.relative_to(ROOT)
+    except ValueError:
+        label = destination
+    print(f"wrote {label} ({len(content)} bytes)")
     return 0
 
 

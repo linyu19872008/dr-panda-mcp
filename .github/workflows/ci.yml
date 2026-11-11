@@ -87,5 +87,25 @@ jobs:
         with:
           python-version: "3.11"
       - run: bash -n scripts/setup.sh
-      - run: python scripts/build_pypi_readme.py --check
+      - name: Check PyPI README is current
+        id: pypi_readme
+        continue-on-error: true
+        run: python scripts/build_pypi_readme.py --check
+      - name: Capture expected PyPI README
+        if: steps.pypi_readme.outcome == 'failure'
+        run: |
+          mkdir -p artifacts
+          python scripts/build_pypi_readme.py --output artifacts/README.pypi.md.expected
+          python scripts/build_pypi_readme.py --check > artifacts/README.pypi.md.diff || true
+      - uses: actions/upload-artifact@v4
+        if: steps.pypi_readme.outcome == 'failure'
+        with:
+          name: readme-pypi-expected
+          path: artifacts/
+      - name: Fail if PyPI README is stale
+        if: steps.pypi_readme.outcome == 'failure'
+        run: |
+          echo "README.pypi.md is stale; download the readme-pypi-expected artifact or run:"
+          echo "  python scripts/build_pypi_readme.py"
+          exit 1
       - run: python scripts/check_docs_links.py

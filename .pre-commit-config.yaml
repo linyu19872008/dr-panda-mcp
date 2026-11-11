@@ -1,0 +1,32 @@
+# Local gates aligned with CI. Install once: uv run pre-commit install
+# Docs: https://pre-commit.com
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff
+        args: [--fix]
+
+  - repo: local
+    hooks:
+      - id: build-pypi-readme
+        name: regenerate README.pypi.md from README.md
+        entry: python scripts/build_pypi_readme.py
+        language: system
+        pass_filenames: false
+        files: ^README\.md$
+
+      - id: alembic-migration-reminder
+        name: remind to run DB setup check after alembic changes
+        language: system
+        entry: bash
+        args:
+          - -c
+          - >-
+            echo "alembic/versions changed; before push run:
+            uv run python scripts/integration/check_db_setup.py
+            (needs MySQL + PostgreSQL)"; exit 0
+        pass_filenames: false
+        files: ^alembic/versions/
+        verbose: true
