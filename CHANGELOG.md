@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-11-23
+
 ### Added
 
 - Portable DrPanda MCP agent skill at `skills/dr-panda-mcp/SKILL.md` (canonical bundle under `.dsh/skills/dr-panda-mcp/`) with playbooks, connector rules, error recovery, result handling, security rules and examples.
@@ -17,6 +19,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 
 - README, README.zh-CN, docs index and CONTRIBUTING document the agent skill and its validation.
+- Release 1.13.0: README describes the skill bundle, host loading and contract; deployment examples and the `setup.sh` default use 1.13.0; the security support matrix is current.
 - CONTRIBUTING / PR template document README.pypi sync and migration + DB setup check expectations.
 
 ## [1.12.0] - 2026-11-10

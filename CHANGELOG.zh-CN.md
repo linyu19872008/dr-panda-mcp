@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-11-23
+
 ### 新增
 
 - 可移植的 DrPanda MCP agent skill：`skills/dr-panda-mcp/SKILL.md`（规范 bundle 在 `.dsh/skills/dr-panda-mcp/`），包含 playbooks、连接器规则、错误恢复、结果处理、安全规则与示例。
@@ -17,6 +19,7 @@
 ### 变更
 
 - README、README.zh-CN、docs 索引与 CONTRIBUTING 补充 agent skill 及其校验说明。
+- 1.13.0 发布：README 补充 skill bundle、宿主加载与契约；部署示例和 `setup.sh` 默认版本改为 1.13.0；安全支持矩阵更新。
 - CONTRIBUTING / PR 模板补充 README.pypi 同步，以及 migration 与 DB setup 检查约定。
 
 ## [1.12.0] - 2026-11-10
