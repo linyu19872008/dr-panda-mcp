@@ -38,6 +38,7 @@
 |---|---|
 | 5 分钟跑起来 | [快速开始](#快速开始) |
 | 接 Cursor / MCP 客户端 | [客户端接入](#客户端接入) |
+| 给 AI agent 一份 playbook | [Agent Skill](#agent-skill) |
 | 查有哪些工具、怎么传参 | [登记目标与工具](#登记目标与工具) |
 | 让 AI 少踩坑 | [给排障 AI 的提示](#给排障-ai-的提示) |
 | 理解只读与审计 | [安全模型](#安全模型) |
@@ -232,6 +233,25 @@ mcp__drpanda__systems_status
 - 网页登录 Session **不能**代替 MCP Token；
 - Token 只存哈希，完整值只在创建时显示一次；丢失只能删除后重新生成；
 - 修改端口后，客户端 URL 要同步修改。
+
+---
+
+## Agent Skill
+
+仓库自带一份给 AI agent 使用的排障 playbook：
+[skills/dr-panda-mcp/SKILL.md](skills/dr-panda-mcp/SKILL.md)。它覆盖目标发现、
+症状 → 工具路由、截断处理、错误恢复和只读红线。服务端的 `instructions`、
+运行时 `scope`、`capabilities` 与只读闸门始终优先。
+
+| 宿主 | 入口 |
+|---|---|
+| DeepSeek Harness | 规范位置在 `.dsh/skills/dr-panda-mcp/`；本仓库作为项目根目录时会自动出现在 skill 目录 |
+| Claude Code | 复制或软链到 `~/.claude/skills/dr-panda-mcp/` |
+| Cursor | [`.cursor/rules/dr-panda-mcp.mdc`](.cursor/rules/dr-panda-mcp.mdc) 指向该 playbook |
+| Codex / 其他客户端 | [`AGENTS.md`](AGENTS.md) 与 [docs/zh-CN/agent-skill.md](docs/zh-CN/agent-skill.md) 提供短版 |
+
+用 `uv run python scripts/check_skill.py` 校验。skill 不授予任何权限：
+`SCOPE_DENIED` 或 `DANGEROUS_OPERATION` 仍然是停止信号。
 
 ---
 

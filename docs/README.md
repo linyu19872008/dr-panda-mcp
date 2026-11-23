@@ -3,6 +3,7 @@
 This directory contains the English documentation linked from [README.md](../README.md).
 
 - [Architecture](architecture.md): components, request flow, read-only guards, data model and deployment.
+- [Agent skill](agent-skill.md): portable playbook, host entry points, validation and evaluation.
 - [Security](security.md): security model, authentication, secrets and remote-access guidance.
 - [UI design](ui-design.md): server-rendered console, design system and page behavior.
 - [Verification](verification.md): testing strategy, CI, verified and unverified capabilities.

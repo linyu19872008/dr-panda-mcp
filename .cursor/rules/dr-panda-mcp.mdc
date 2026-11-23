@@ -1,0 +1,13 @@
+---
+description: DrPanda MCP read-only investigation playbook
+globs:
+alwaysApply: false
+---
+When DrPanda MCP tools are available (`mcp__<server>__systems_status`), read
+`.dsh/skills/dr-panda-mcp/SKILL.md` (also linked at
+`skills/dr-panda-mcp/SKILL.md`) and follow it before investigating.
+
+Start with `systems_status`; never invent an environment, target, or selector;
+stay read-only; report truncation. If the DrPanda MCP tools are not available,
+stop and ask the user to configure the DrPanda MCP server. The runtime `scope`
+and `capabilities` always override this rule and the skill.

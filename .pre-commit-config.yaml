@@ -17,6 +17,13 @@ repos:
         pass_filenames: false
         files: ^README\.md$
 
+      - id: check-skill
+        name: validate the DrPanda agent skill
+        entry: python scripts/check_skill.py
+        language: system
+        pass_filenames: false
+        files: ^(\.dsh/skills/|skills/|\.cursor/rules/|scripts/check_skill\.py|tests/test_skill\.py|README\.md|AGENTS\.md|docs/agent-skill\.md)
+
       - id: alembic-migration-reminder
         name: remind to run DB setup check after alembic changes
         language: system

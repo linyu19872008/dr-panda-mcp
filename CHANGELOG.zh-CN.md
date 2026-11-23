@@ -8,11 +8,15 @@
 
 ### 新增
 
+- 可移植的 DrPanda MCP agent skill：`skills/dr-panda-mcp/SKILL.md`（规范 bundle 在 `.dsh/skills/dr-panda-mcp/`），包含 playbooks、连接器规则、错误恢复、结果处理、安全规则与示例。
+- 宿主入口：DeepSeek Harness 的 filesystem skill 自动发现、Cursor 项目规则、给 Codex 等客户端的 `AGENTS.md`。
+- `scripts/check_skill.py` 与 `tests/test_skill.py` 在 CI 和 pre-commit 中校验工具名、引用、密钥、README/Cursor 入口与 skill 体积。
 - 贡献者工具：`pre-commit`（ruff；改 `README.md` 时自动重生 `README.pypi.md`；改 `alembic/versions/` 时提醒跑 DB setup）。
 - CI 在 docs job 发现 PyPI README 过期时上传期望的 `README.pypi.md` artifact。
 
 ### 变更
 
+- README、README.zh-CN、docs 索引与 CONTRIBUTING 补充 agent skill 及其校验说明。
 - CONTRIBUTING / PR 模板补充 README.pypi 同步，以及 migration 与 DB setup 检查约定。
 
 ## [1.12.0] - 2026-11-10

@@ -40,6 +40,7 @@ Register **10 component types** (MySQL, MongoDB, Elasticsearch, Redis, GitLab, R
 |---|---|
 | Run it in 5 minutes | [Quick start](#quick-start) |
 | Wire Cursor / an MCP client | [Client setup](#client-setup) |
+| Give an agent a playbook | [Agent skill](#agent-skill) |
 | See tools and how to pass args | [Targets and tools](#targets-and-tools) |
 | Help the AI avoid dead ends | [Tips for troubleshooting AIs](#tips-for-troubleshooting-ais) |
 | Understand read-only + audit | [Security model](#security-model) |
@@ -234,6 +235,26 @@ Notes:
 - a web login session **cannot** replace an MCP token;
 - only token hashes are stored; the full value is shown once at creation and cannot be recovered (delete and create a new one if lost);
 - if you change the port, update client URLs accordingly.
+
+---
+
+## Agent skill
+
+The repository ships a portable playbook for agents that use DrPanda:
+[skills/dr-panda-mcp/SKILL.md](skills/dr-panda-mcp/SKILL.md). It covers target
+discovery, symptom → tool routing, result truncation, error recovery, and the
+read-only hard stops. The server's `instructions`, runtime `scope`,
+`capabilities`, and guards remain authoritative.
+
+| Host | Entry point |
+|---|---|
+| DeepSeek Harness | canonical bundle at `.dsh/skills/dr-panda-mcp/`; it appears in the skill catalog when this repository is the project root |
+| Claude Code | copy or symlink the bundle to `~/.claude/skills/dr-panda-mcp/` |
+| Cursor | [`.cursor/rules/dr-panda-mcp.mdc`](.cursor/rules/dr-panda-mcp.mdc) points the agent at the playbook |
+| Codex / other clients | [`AGENTS.md`](AGENTS.md) and [docs/agent-skill.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/agent-skill.md) provide the short form |
+
+Validate it with `uv run python scripts/check_skill.py`. The skill never grants
+permissions: a `SCOPE_DENIED` or `DANGEROUS_OPERATION` is still a stop signal.
 
 ---
 
