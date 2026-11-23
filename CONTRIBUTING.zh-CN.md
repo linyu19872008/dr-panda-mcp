@@ -23,10 +23,15 @@ cp .env.example .env        # 可选；服务会自动加载 ./.env
 uv run pre-commit run --all-files
 uv run ruff check .
 uv run pytest -q
+uv run python scripts/check_skill.py
 uv run python scripts/smoke.py
 uv run python scripts/check_docs_links.py
 uv run python scripts/build_pypi_readme.py --check
 ```
+
+若改动 agent skill，请保持 `.dsh/skills/dr-panda-mcp/` 规范 bundle、
+`skills/dr-panda-mcp` 软链、Cursor 规则和 README 链接一致；
+`check_skill.py` 会在漂移或未知工具名时失败。
 
 若改动了 `alembic/versions/`，还需要跑真实库 setup 检查（Docker 或本机 MySQL 8 + PostgreSQL 16）：
 

@@ -8,11 +8,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Portable DrPanda MCP agent skill at `skills/dr-panda-mcp/SKILL.md` (canonical bundle under `.dsh/skills/dr-panda-mcp/`) with playbooks, connector rules, error recovery, result handling, security rules and examples.
+- Host entry points: DeepSeek Harness filesystem skill discovery, a Cursor project rule, and `AGENTS.md` for Codex and other clients.
+- `scripts/check_skill.py` and `tests/test_skill.py` validate tool names, references, secrets, README/Cursor links and skill size in CI and pre-commit.
 - Contributor tooling: `pre-commit` (ruff + auto-regenerate `README.pypi.md` when `README.md` changes; reminder when `alembic/versions/` changes).
 - CI uploads an expected `README.pypi.md` artifact when the docs job detects a stale PyPI README.
 
 ### Changed
 
+- README, README.zh-CN, docs index and CONTRIBUTING document the agent skill and its validation.
 - CONTRIBUTING / PR template document README.pypi sync and migration + DB setup check expectations.
 
 ## [1.12.0] - 2026-11-10

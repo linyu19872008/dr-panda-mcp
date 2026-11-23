@@ -63,7 +63,9 @@ logs/
 # ---------------------------------------------------------------------------
 .vscode/
 .idea/
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 .codegraph/
 *.swp
 *.swo

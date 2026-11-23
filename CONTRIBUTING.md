@@ -23,10 +23,15 @@ Run the checks before opening a pull request:
 uv run pre-commit run --all-files
 uv run ruff check .
 uv run pytest -q
+uv run python scripts/check_skill.py
 uv run python scripts/smoke.py
 uv run python scripts/check_docs_links.py
 uv run python scripts/build_pypi_readme.py --check
 ```
+
+If you change the agent skill, keep the canonical `.dsh/skills/dr-panda-mcp/`
+bundle, the `skills/dr-panda-mcp` symlink, the Cursor rule, and the README links
+consistent; `check_skill.py` fails on drift and unknown tool names.
 
 If you change files under `alembic/versions/`, also run the real-database setup check (Docker or local MySQL 8 + PostgreSQL 16):
 
