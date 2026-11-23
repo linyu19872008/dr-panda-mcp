@@ -8,8 +8,8 @@ DrPanda MCP is a read-only troubleshooting service that stores connection metada
 
 | Version | Supported |
 |---|---|
-| 0.1.x | Yes |
-| < 0.1 | No |
+| 1.13.x | Yes |
+| < 1.13 | No |
 
 ## Reporting a vulnerability
 

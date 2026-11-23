@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261110e"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261123"></a>
   <a href="LICENSE"><img alt="License: MIT" src="docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -13,7 +13,7 @@
 
 # DrPanda MCP
 
-面向线上故障排查的**只读 MCP 服务**（当前 **1.12.0**）。
+面向线上故障排查的**只读 MCP 服务**（当前 **1.13.0**）。
 
 在网页里登记 **10 类**排查目标（MySQL、MongoDB、Elasticsearch、Redis、GitLab、RabbitMQ、Kafka、CLS、Nacos、Jenkins）的地址、凭证和允许范围；Cursor / Codex / DeepSeek Harness 等通过 Streamable HTTP 调用 `/mcp`，模型只能按 `environment` + `target` 使用只读工具。
 
@@ -119,7 +119,7 @@ http://127.0.0.1:8111/
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.12.0","db":"ok"}
+# {"ok":true,"version":"1.13.0","db":"ok"}
 ```
 
 ### 可选依赖
@@ -156,7 +156,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-也支持 PyPI 安装（`--method pypi --version 1.12.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
+也支持 PyPI 安装（`--method pypi --version 1.13.0`）、健康检查、升级和专用 `drpanda` systemd 用户。详见 [docs/zh-CN/deployment.md](docs/zh-CN/deployment.md)。
 
 ---
 
@@ -238,10 +238,28 @@ mcp__drpanda__systems_status
 
 ## Agent Skill
 
-仓库自带一份给 AI agent 使用的排障 playbook：
-[skills/dr-panda-mcp/SKILL.md](skills/dr-panda-mcp/SKILL.md)。它覆盖目标发现、
-症状 → 工具路由、截断处理、错误恢复和只读红线。服务端的 `instructions`、
-运行时 `scope`、`capabilities` 与只读闸门始终优先。
+仓库自带一份只读排障 playbook，供调用 DrPanda 的 AI agent 使用：
+[skills/dr-panda-mcp/SKILL.md](skills/dr-panda-mcp/SKILL.md)。它是“宿主能调工具”
+和“模型知道下一步该调什么”之间的决策层，不是 README 或工具 schema 的第二份
+拷贝。规范 bundle 位于 `.dsh/skills/dr-panda-mcp/`。
+
+### 包含什么
+
+| 文件 | 回答什么问题 |
+|---|---|
+| `SKILL.md` | 何时使用、目标发现、症状 → 工具路由、只读红线和报告格式 |
+| `references/playbooks.md` | 10 条故障流程：报错、慢 SQL、缓存、Kafka、RabbitMQ、Jenkins、Nacos、ES、Mongo、GitLab |
+| `references/connectors.md` | 10 类连接器的 scope 字段名与使用规则 |
+| `references/errors.md` | 错误码 → 下一步动作，包括什么时候不要重试 |
+| `references/results.md` | 结果包络、截断、分页和 CLS 分析行 |
+| `references/security.md` | 只读、凭证和不可信的 `operator_notes` |
+| `references/examples.md` | 3 段短 transcript 与期望证据 |
+
+典型的第一步是 `systems_status()` → `systems_status(environment="prod")` →
+`mysql_tables` → `mysql_describe` → `mysql_query`。环境和目标不明确时，skill 要求
+agent 停下来问；结果被截断时，要求明确报告，而不是补全。
+
+### 宿主加载
 
 | 宿主 | 入口 |
 |---|---|
@@ -250,8 +268,18 @@ mcp__drpanda__systems_status
 | Cursor | [`.cursor/rules/dr-panda-mcp.mdc`](.cursor/rules/dr-panda-mcp.mdc) 指向该 playbook |
 | Codex / 其他客户端 | [`AGENTS.md`](AGENTS.md) 与 [docs/zh-CN/agent-skill.md](docs/zh-CN/agent-skill.md) 提供短版 |
 
-用 `uv run python scripts/check_skill.py` 校验。skill 不授予任何权限：
-`SCOPE_DENIED` 或 `DANGEROUS_OPERATION` 仍然是停止信号。
+### 契约
+
+- 运行时 `systems_status`、`scope`、`capabilities` 和 guard 错误始终高于 skill
+  里的任何文字。
+- skill 里不出现 target 名、主机、凭证或 selector；示例只用 `<env>`、`<target>`、
+  `<logsetId>/<topicId>` 等占位符。
+- 它不授予任何权限：`SCOPE_DENIED` 和 `DANGEROUS_OPERATION` 仍然是停止信号。
+- `uv run python scripts/check_skill.py` 在 CI 和 pre-commit 中校验工具名、引用、
+  密钥、README/Cursor 入口和 skill 体积。
+
+常驻的 server instructions 仍是安全契约；skill 只补按需加载的工作流和连接器细节。
+加载、评估和维护规则见 [docs/zh-CN/agent-skill.md](docs/zh-CN/agent-skill.md)。
 
 ---
 

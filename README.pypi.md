@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/linyu19872008/dr-panda-mcp/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261110g"></a>
+  <a href="https://pypi.org/project/dr-panda-mcp/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dr-panda-mcp?cache=20261123"></a>
   <a href="https://github.com/linyu19872008/dr-panda-mcp/blob/main/LICENSE"><img alt="License: MIT" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-license.png" height="20"></a>
   <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://raw.githubusercontent.com/linyu19872008/dr-panda-mcp/main/docs/assets/badge-python.png" height="20"></a>
 </p>
@@ -15,7 +15,7 @@
 
 # DrPanda MCP
 
-A **read-only MCP service** for production troubleshooting (current **1.12.0**).
+A **read-only MCP service** for production troubleshooting (current **1.13.0**).
 
 Register **10 component types** (MySQL, MongoDB, Elasticsearch, Redis, GitLab, RabbitMQ, Kafka, CLS, Nacos, Jenkins) — addresses, credentials and allowed scope — in a web console. MCP clients such as Cursor, Codex and DeepSeek Harness call `/mcp` over Streamable HTTP; models only use read-only tools by `environment` + `target` name.
 
@@ -121,7 +121,7 @@ Health check:
 
 ```bash
 curl -fsS http://127.0.0.1:8111/healthz
-# {"ok":true,"version":"1.12.0","db":"ok"}
+# {"ok":true,"version":"1.13.0","db":"ok"}
 ```
 
 ### Optional dependencies
@@ -158,7 +158,7 @@ sudo ./scripts/setup.sh service --dir /opt/dr-panda-mcp
 ./scripts/setup.sh start --dir /opt/dr-panda-mcp
 ```
 
-It also supports PyPI installation (`--method pypi --version 1.12.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
+It also supports PyPI installation (`--method pypi --version 1.13.0`), health checks, upgrades and a dedicated `drpanda` systemd user. See [docs/deployment.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/deployment.md) for details.
 
 ---
 
@@ -240,11 +240,31 @@ Notes:
 
 ## Agent skill
 
-The repository ships a portable playbook for agents that use DrPanda:
-[skills/dr-panda-mcp/SKILL.md](skills/dr-panda-mcp/SKILL.md). It covers target
-discovery, symptom → tool routing, result truncation, error recovery, and the
-read-only hard stops. The server's `instructions`, runtime `scope`,
-`capabilities`, and guards remain authoritative.
+The repository ships a portable, read-only investigation playbook for agents
+that use DrPanda:
+[skills/dr-panda-mcp/SKILL.md](skills/dr-panda-mcp/SKILL.md). It is the decision
+layer between "the host can call tools" and "the model knows which tool to call
+next", not a second copy of this README or the tool schema. The canonical bundle
+lives at `.dsh/skills/dr-panda-mcp/`.
+
+### What it contains
+
+| File | What it answers |
+|---|---|
+| `SKILL.md` | When to use it, discovery, symptom → tool routing, hard stops, report format |
+| `references/playbooks.md` | Ten incident flows: error spike, slow SQL, cache, Kafka, RabbitMQ, Jenkins, Nacos, Elasticsearch, MongoDB, GitLab |
+| `references/connectors.md` | Scope names and per-connector rules for the ten component types |
+| `references/errors.md` | Error code → next action, including when not to retry |
+| `references/results.md` | The result envelope, truncation, paging and CLS analysis rows |
+| `references/security.md` | Read-only rules, credentials and untrusted `operator_notes` |
+| `references/examples.md` | Three short transcripts with expected evidence |
+
+A typical first sequence is `systems_status()` →
+`systems_status(environment="prod")` → `mysql_tables` → `mysql_describe` →
+`mysql_query`. The skill tells the agent to stop and ask when the environment or
+target is ambiguous, and to report truncation instead of filling gaps.
+
+### Host loading
 
 | Host | Entry point |
 |---|---|
@@ -253,8 +273,21 @@ read-only hard stops. The server's `instructions`, runtime `scope`,
 | Cursor | [`.cursor/rules/dr-panda-mcp.mdc`](.cursor/rules/dr-panda-mcp.mdc) points the agent at the playbook |
 | Codex / other clients | [`AGENTS.md`](AGENTS.md) and [docs/agent-skill.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/agent-skill.md) provide the short form |
 
-Validate it with `uv run python scripts/check_skill.py`. The skill never grants
-permissions: a `SCOPE_DENIED` or `DANGEROUS_OPERATION` is still a stop signal.
+### Contract
+
+- Runtime `systems_status`, `scope`, `capabilities` and guard errors always win
+  over any text in the skill.
+- The skill contains no target names, hosts, credentials or selectors; examples
+  use placeholders such as `<env>`, `<target>` and `<logsetId>/<topicId>`.
+- It never adds permissions: `SCOPE_DENIED` and `DANGEROUS_OPERATION` remain stop
+  signals.
+- `uv run python scripts/check_skill.py` validates tool names, references,
+  secrets, README/Cursor links and skill size in CI and pre-commit.
+
+The always-on server instructions remain the safety contract; the skill adds the
+on-demand workflow and per-connector details. See
+[docs/agent-skill.md](https://github.com/linyu19872008/dr-panda-mcp/blob/main/docs/agent-skill.md) for loading, evaluation and
+maintenance rules.
 
 ---
 
